@@ -59,12 +59,46 @@ WhatsApp arrives via an in-process bridge (not HTTP).
 
 ## Admin
 
-Operator-only routes. JWT must carry the `admin` claim.
+Operator-only routes. JWT must carry the `admin` claim (the reserved all-zeros tenant).
 
-| Method | Path                                                  | Auth   | Description                                    |
-|--------|-------------------------------------------------------|--------|------------------------------------------------|
-| GET    | `/admin/webhooks/dead-letters/{tenant_id}`            | admin  | List dead-lettered webhook events.             |
-| POST   | `/admin/webhooks/replay/{tenant_id}/{event_id}`       | admin  | Replay a specific dead-lettered event.         |
+### Tenant provisioning
+
+| Method | Path              | Auth  | Description                                              |
+|--------|-------------------|-------|----------------------------------------------------------|
+| POST   | `/admin/tenants`  | admin | Create a tenant and return an initial `tenant_admin` JWT.|
+| GET    | `/admin/tenants`  | admin | List all tenants with status and role count.             |
+
+```bash
+curl -X POST https://<runtime>/admin/tenants \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Acme Corp"}'
+# → {tenant_id, tenant_name, roles, token, ttl_seconds}
+```
+
+### JWT minting
+
+| Method | Path                        | Auth  | Description                                |
+|--------|-----------------------------|----|------------------------------------------------|
+| POST   | `/admin/jwt/{tenant_id}`    | admin | Mint a role-scoped JWT for an existing tenant. |
+
+### RBAC roles
+
+| Method | Path                                  | Auth  | Description                            |
+|--------|---------------------------------------|-------|----------------------------------------|
+| GET    | `/admin/roles/{tenant_id}`            | admin | List the role library for a tenant.    |
+| POST   | `/admin/roles/{tenant_id}`            | admin | Create or replace a role.              |
+| DELETE | `/admin/roles/{tenant_id}/{role_name}`| admin | Delete a role.                         |
+
+### Webhooks & audit
+
+| Method | Path                                                  | Auth  | Description                                    |
+|--------|-------------------------------------------------------|-------|------------------------------------------------|
+| GET    | `/admin/webhooks/dead-letters/{tenant_id}`            | admin | List dead-lettered webhook events.             |
+| POST   | `/admin/webhooks/replay/{tenant_id}/{event_id}`       | admin | Replay a specific dead-lettered event.         |
+| GET    | `/admin/audit/denials/{tenant_id}`                    | admin | Tail recent RBAC denials for a tenant.         |
+| GET    | `/admin/metrics/revenue-per-agent/{tenant_id}`        | admin | Revenue-per-agent pricing metric.              |
+| GET    | `/admin/dashboard`                                    | admin | Operator HTML dashboard.                       |
 
 ## Authentication
 
@@ -74,7 +108,7 @@ All authenticated calls use bearer tokens:
 Authorization: Bearer <jwt>
 ```
 
-JWTs are minted via the operator-side `scripts/mint-jwt.py` and signed with `MEMORY_RUNTIME_PRO_JWT_SECRET`. Each token is scoped to one tenant_id and cannot be rescoped at runtime.
+JWTs are minted via `POST /admin/tenants` (returns an initial token on creation), `POST /admin/jwt/{tenant_id}` (re-mint with specific roles), or the operator-side `scripts/mint-jwt.py`. Tokens are signed with `MEMORY_RUNTIME_PRO_JWT_SECRET` and scoped to one tenant_id.
 
 ## Status codes
 
