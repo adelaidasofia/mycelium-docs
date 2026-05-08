@@ -1,0 +1,56 @@
+---
+title: "Reliability manifesto"
+description: "The same five pillars, framed for the security architect persona"
+---
+
+This page mirrors [/architecture/overview](/architecture/overview), but the framing is for the security architect or platform-team lead evaluating whether the runtime can sit inside a regulated environment.
+
+If you came here from a procurement review, the other questions you probably need answered live at [/security/posture](/security/posture) and [/self-host/byoc](/self-host/byoc).
+
+## Failure modes the substrate prevents
+
+Every architecture decision below maps to a class of agent failure that has shipped to production at other vendors. Each pillar is the deterministic guard against one class.
+
+### Pillar 1. Vault as ground truth, not LLM memory
+
+The system never trusts what the model remembers between sessions. Every skill compiles from markdown the company already controls. Process change is a file edit. The git history is the audit log. When the model wants to assert a fact, the claim must trace to a file path, or it surfaces as a gap.
+
+**Failure prevented: hallucination.** The model cannot invent a procedure that does not exist in the vault, because procedures only enter the agent's context by being read, and reads are deterministic.
+
+Audit posture: the vault is plain markdown on disk. A compliance auditor can read it without the runtime. Git history is the change log. No proprietary serialization sits between the auditor and the data.
+
+### Pillar 2. Hooks as deterministic guardrails
+
+Every write the agent makes runs through pre- and post-tool hooks that block on rule violation. Secrets in a public path: blocked. A contractor task missing required fields: blocked. A timezone-naive calendar event: blocked. The hooks are not LLM-judged. They are Python checks against the actual write payload.
+
+**Failure prevented: silent failure.** An agent cannot ship a violation that the system has a rule for, because the rule fires at write time, not at audit time.
+
+Audit posture: hooks are Python files in the repo. Every block emits a structured log line with the rule name, the matched payload, and the timestamp. Forwardable to any SIEM.
+
+### Pillar 3. Rule extraction from existing artifacts
+
+A new install does not start blank. The system reads the company's Slack export, Notion export, GDocs, or markdown corpus, and emits drafts: candidate guardrail rules from recurring decision phrases, candidate skills from recurring rituals, candidate authority entries from owner-of-process patterns. The founder reviews and accepts.
+
+**Failure prevented: cold start.** A freshly installed agent does not need three weeks of corrections to reach a competent baseline, because the company's existing tribal knowledge is encoded as guardrails on day one.
+
+Audit posture: every extracted rule cites the source document and line range. Reviewer rejects or accepts on the same screen.
+
+### Pillar 4. Decision-outcome trail
+
+Every decision logged in the system has an outcome field that defaults to blank. A scheduled scan surfaces decisions older than threshold whose outcome is still empty. The founder fills them in, and the trail compounds. Over months, the system learns which decisions worked and which did not.
+
+**Failure prevented: drift.** When the company's process actually changed, the divergence between expected and recorded outcomes surfaces as a signal, and the rules layer is updated before the agent operates on stale guidance.
+
+Audit posture: decisions are bi-temporal (`valid_from`, `valid_to`). A regulator asking "what was the rule on date X?" gets a deterministic answer.
+
+### Pillar 5. Session-close cascade
+
+Every session ends with a deterministic three-layer pipeline that scans the conversation, files decisions to the decision log, captures journal seeds verbatim, drafts notes from quotable moments, and routes action items to canonical task lists. Nothing stays trapped in chat transcripts.
+
+**Failure prevented: knowledge loss.** The lessons that surface inside a session always end up in permanent storage, so the next session inherits the new context without anyone copying anything by hand.
+
+Audit posture: every session's close pipeline writes a session stub to a per-day folder. Auditable as a flat directory tree.
+
+## What this means for procurement
+
+Hallucination, silent failure, cold start, drift, knowledge loss. Each of those is a finding in a vendor risk assessment. The architecture treats them as design constraints, not late-stage patches. If your evaluation rubric includes "how does the vendor prevent the agent from confidently wrong-answering an audit question?", the five pillars are the answer.

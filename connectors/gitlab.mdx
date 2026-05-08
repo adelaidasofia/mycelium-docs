@@ -1,0 +1,42 @@
+---
+title: "GitLab"
+description: "Ingest GitLab merge requests, issues, and pipeline events into typed memory"
+---
+
+GitLab uses a webhook receiver (paid runtime).
+
+## Webhook receiver (paid runtime)
+
+```
+POST /webhooks/gitlab/{tenant_id}
+```
+
+**Signature:** GitLab sends `X-Gitlab-Token` as a plain shared secret in the request header. The receiver validates the token against the per-tenant secret.
+
+### Setup
+
+1. In your GitLab project or group, go to **Settings > Webhooks > Add webhook**.
+2. Set URL to `https://runtime.myceliumai.co/webhooks/gitlab/{your_tenant_id}`.
+3. Enter a secret token.
+4. Select triggers: **Push events**, **Merge request events**, **Issue events**, **Pipeline events**, **Releases**.
+5. Add the token to the runtime: `GITLAB_WEBHOOK_TOKEN_{TENANT_ID}` in your env.
+
+For group-level webhooks (GitLab Premium), configure in **Group > Settings > Webhooks**.
+
+### Events ingested
+
+| GitLab event       | Memory category | Notes                                               |
+|--------------------|-----------------|-----------------------------------------------------|
+| Merge request      | decision        | MR merged = decision; closed without merge = exception |
+| Issue              | exception       | Opened = exception; closed = resolved               |
+| Push               | fact            | Commit messages extracted as facts                  |
+| Pipeline           | fact            | Pipeline result, duration, triggering commit        |
+| Release            | decision        | Release tag and description                         |
+
+### Retry behavior
+
+Failed deliveries land in the per-tenant dead-letter folder. Replay via:
+
+```
+POST /admin/webhooks/replay/{tenant_id}/{event_id}
+```

@@ -1,0 +1,30 @@
+---
+title: "Architectural lineage"
+description: "The pattern Karpathy named, with the older roots it sits on"
+---
+
+The architecture has a name in the recent literature and an older intellectual lineage that it sits on. Both matter for understanding why the substrate is shaped this way.
+
+## The Karpathy pattern (2026)
+
+Andrej Karpathy described the pattern explicitly in early 2026: the agent layer should be thin and the substrate thick. Memory, retrieval, and rule routing should be deterministic services that the model calls into. The model's job is synthesis on top of retrieved context, not classification of everything from scratch.
+
+Garry Tan reinforced the same shape from the YC side: the moat for AI-native companies is in the substrate (typed memory, audit, multi-tenant isolation, connector breadth) more than in the model wrapper.
+
+The five reliability pillars (see [overview](/architecture/overview)) operationalize this pattern: vault as ground truth, hooks as guardrails, rule extraction from existing artifacts, decision-outcome trail, session-close cascade. Each pillar moves a piece of the agent's reasoning load down into deterministic substrate.
+
+## Older roots
+
+The pattern is older than the recent vocabulary. Three lines of work converge here.
+
+**ACT-R (Anderson, 1976-present).** Cognitive architecture from CMU. Production rules fire deterministically on declarative memory; learning is rule chunking. The substrate-thick / agent-thin shape comes from ACT-R's explicit separation of declarative (vault) and procedural (skills) memory.
+
+**Soar (Newell, Laird, Rosenbloom, 1983-present).** General intelligence architecture. Operators select on goal context; impasses trigger learning. The decision-outcome trail in pillar 4 is a direct descendant of Soar's chunking pattern.
+
+**BDI agents (Rao, Georgeff, 1991).** Beliefs / Desires / Intentions. The vault holds beliefs (typed memory), the founder's goals are desires (to-do lists, decision logs), and the runtime executes intentions (skills, hooks). Multi-agent BDI literature handled the reliability question (failure recovery, commitment under uncertainty) decades before transformer agents needed it.
+
+## Why citing the lineage matters
+
+A buyer evaluating reliability claims (a security architect, a Java-shop platform team, a regulated-vertical operator) looks for grounding in mature architectures, not whichever vocabulary the lab released last quarter. The substrate pattern is twenty-plus years old in cognitive science. The model wrapper layer is two years old. The reliability story sits on the older foundation.
+
+This is not retrofitting. The vault-as-ground-truth choice was made because hallucination is what the substrate-thin patterns failed to prevent. The lineage explains why the architecture works, and why the vocabulary will outlast any specific model release.

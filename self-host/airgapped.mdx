@@ -1,0 +1,38 @@
+---
+title: "Airgapped"
+description: "Fully airgapped installs for regulated and classified environments"
+---
+
+For environments without internet egress (classified, defense, certain financial-services backbones), the runtime ships with an airgapped Dockerfile and a runbook for fully offline operation.
+
+For the procurement framing, see the airgapped section at [myceliumai.co/byoc#airgapped](https://myceliumai.co/byoc#airgapped).
+
+## What changes vs BYOC
+
+- **No telemetry egress.** Crash reports, usage telemetry, and update checks are disabled at build time.
+- **Bundled model fallbacks.** Local-only model adapters (Ollama, vLLM, MLC) are first-class. The runtime never assumes a hosted model is reachable.
+- **Bundled connector adapters.** Connectors that require outbound calls (Slack, Salesforce, etc.) are disabled in the airgapped image; webhook receivers operate inside the customer's network only.
+- **Manual update path.** New images arrive on a media drop. The customer's update cadence is decoupled from vendor release cadence.
+
+## Bundled stack
+
+- Runtime container (airgapped build)
+- Bundled embedding model (sentence-transformers / instructor-large)
+- Local LLM fallback adapter (Ollama wrapper)
+- Bundled vector store (FAISS)
+- Bundled audit forwarder for syslog / Splunk-compatible HEC
+
+## Procurement notes
+
+Common questions from customers running airgapped:
+
+- **Where does the embedding model live?** Bundled in the image. No outbound calls.
+- **How are updates delivered?** Signed media drop. The customer verifies the signature before installing.
+- **What if a CVE drops between drops?** Vendor publishes the patch and an out-of-band advisory. Customer decides timing.
+- **Can the customer fork?** Yes. The airgapped build is reproducible; customer can rebuild from the source repo.
+
+## Status
+
+The airgapped Dockerfile ships in the runtime repo. The bundled-model adapter set is stable for sentence-transformers + Ollama. Additional model adapters (vLLM, MLC) are on the roadmap.
+
+For an airgapped install scoping conversation, contact us through the marketing site.

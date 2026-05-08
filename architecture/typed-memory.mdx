@@ -1,0 +1,65 @@
+---
+title: "Typed memory"
+description: "Memory categories, JSON Schema validation, file shape"
+---
+
+A vault note is not just a markdown file. It is a typed record: the frontmatter declares which category the entry belongs to, and the runtime validates the body against the matching JSON Schema before accepting the write.
+
+## Categories
+
+Five canonical categories ship in the substrate. Each maps to a stable slug used by the runtime API.
+
+| Category      | Slug            | Use for                                                                    |
+|---------------|-----------------|----------------------------------------------------------------------------|
+| Decision      | `decisions`     | A choice the team made, with context and trade-offs. Outcome filled later. |
+| Exception     | `exceptions`    | A documented deviation from the standard process and why.                  |
+| Fact          | `facts`         | A stable claim about the world (a price, a deadline, a contract clause).   |
+| Workflow      | `workflows`     | A repeatable procedure with steps, owners, and exit criteria.              |
+| Relationship  | `relationships` | A typed edge between two entities (person, account, opportunity, etc.).    |
+
+A sixth category, `outcomes`, exists for closing the loop on past decisions and is created automatically when a decision is marked resolved.
+
+## File shape
+
+Every entry is a markdown file with a frontmatter block:
+
+```markdown
+---
+id: 0a3f88
+type: decision
+title: Move from monthly to weekly review cadence
+tenant_id: acme-corp
+valid_from: 2026-04-15
+valid_to: null
+recorded_at: 2026-04-20T14:32:00-05:00
+tags: [process, cadence]
+---
+
+## Context
+
+The monthly review cadence was missing weekly drift events that mattered.
+
+## Trade-offs
+
+Considered keeping monthly with mid-month spot-check; rejected because spot-checks were skipped in 3 of 4 months.
+
+## Outcome
+
+(Filled in when resolved.)
+```
+
+`valid_from` and `valid_to` are the bi-temporal anchors used by the [resolver](/architecture/resolver) to answer "what was the rule on this date?".
+
+## Validation
+
+Each category has a JSON Schema in the substrate at `schemas/<category>.schema.json`. The schema declares required frontmatter fields and the body's section structure. Writes through the runtime API validate against the schema and reject anything malformed with a 422.
+
+Schema evolution rules:
+
+- Add fields freely (default to null or empty).
+- Removing a field requires a migration script that runs against existing entries.
+- Changing a field's type is a breaking change and requires a new schema version.
+
+## Storage
+
+Entries live on disk under `vaults/<tenant_id>/<Category>/<YYYY>/<YYYY-MM-DD>-<slug>.md`. A SHA-8 of the file path becomes the entry's stable `id` for API operations. The disk format is plain markdown so vaults remain readable, greppable, and git-versionable without the runtime running.

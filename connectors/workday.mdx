@@ -1,0 +1,46 @@
+---
+title: "Workday"
+description: "Ingest Workday HR events and business process notifications into typed memory"
+---
+
+Workday uses a webhook receiver (paid runtime) via Workday's Business Process framework and REST API.
+
+## Webhook receiver (paid runtime)
+
+```
+POST /webhooks/workday/{tenant_id}
+```
+
+**Signature:** Workday outbound notifications use a client ID / client secret for OAuth 2.0 token validation. The runtime fetches a bearer token before each polling cycle and uses it to validate incoming push notifications from the Workday Event Broker.
+
+### Setup
+
+1. Create an Integration System User (ISU) in Workday with appropriate security permissions.
+2. Register an API Client in Workday: **Tenant Setup > OAuth 2.0 Clients**.
+3. Configure the Workday Event Broker to push to `https://runtime.myceliumai.co/webhooks/workday/{your_tenant_id}`.
+4. Assign business process notifications: **Hire**, **Termination**, **Compensation Change**, **Position Change**, **Leave of Absence**.
+5. Add to the runtime env:
+   - `WORKDAY_TENANT_ID_{TENANT_ID}`
+   - `WORKDAY_CLIENT_ID_{TENANT_ID}`
+   - `WORKDAY_CLIENT_SECRET_{TENANT_ID}`
+   - `WORKDAY_TOKEN_URL_{TENANT_ID}` (tenant-specific token endpoint)
+
+### Events ingested
+
+| Workday event          | Memory category | Notes                                               |
+|------------------------|-----------------|-----------------------------------------------------|
+| Hire                   | relationship    | New employee: role, department, manager, start date |
+| Termination            | relationship    | Departure date, role last held                      |
+| Compensation Change    | fact            | Effective date; amounts not stored by default       |
+| Position Change        | relationship    | Role / department / manager changes                 |
+| Leave of Absence       | fact            | Leave type, expected return date                    |
+
+**PII handling:** Compensation amounts and sensitive HR fields are excluded from memory by default. Configure `workday.exclude_fields` in the connector config to add or remove exclusions.
+
+### Retry behavior
+
+Failed deliveries land in the per-tenant dead-letter folder. Replay via:
+
+```
+POST /admin/webhooks/replay/{tenant_id}/{event_id}
+```

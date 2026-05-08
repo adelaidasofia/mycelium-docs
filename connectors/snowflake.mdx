@@ -1,0 +1,53 @@
+---
+title: "Snowflake"
+description: "Ingest Snowflake query results and data change events into typed memory"
+---
+
+Snowflake uses a webhook receiver (paid runtime) via Snowflake Streams, Tasks, and Alerts.
+
+## Webhook receiver (paid runtime)
+
+```
+POST /webhooks/snowflake/{tenant_id}
+```
+
+**Signature:** Snowflake External Function calls include an `sf-custom-auth-token` header. The runtime validates the token against the per-tenant secret.
+
+### Setup
+
+Snowflake does not push webhooks natively. The integration uses an External Function that wraps the Mycelium API, triggered by Snowflake Tasks and Alerts.
+
+1. Create an API Integration in Snowflake:
+   ```sql
+   CREATE OR REPLACE API INTEGRATION mycelium_integration
+     API_PROVIDER = aws_api_gateway  -- or azure_api_management
+     API_AWS_ROLE_ARN = '<iam_role>'
+     API_ALLOWED_PREFIXES = ('https://runtime.myceliumai.co/')
+     ENABLED = TRUE;
+   ```
+2. Create a Snowflake External Function:
+   ```sql
+   CREATE OR REPLACE EXTERNAL FUNCTION mycelium_ingest(payload VARIANT)
+     RETURNS VARIANT
+     API_INTEGRATION = mycelium_integration
+     AS 'https://runtime.myceliumai.co/webhooks/snowflake/{your_tenant_id}';
+   ```
+3. Call the function from Tasks or Alerts on the tables/queries you want to monitor.
+4. Add to the runtime env:
+   - `SNOWFLAKE_AUTH_TOKEN_{TENANT_ID}` (the `sf-custom-auth-token` value)
+
+### Events ingested
+
+| Snowflake trigger       | Memory category | Notes                                               |
+|-------------------------|-----------------|-----------------------------------------------------|
+| Alert: anomaly detected | exception       | Threshold-crossing events from Snowflake Alerts     |
+| Task: query result      | fact            | Query output snapshot captured as typed fact        |
+| Stream: row change      | fact            | CDC-style row changes from Snowflake Streams        |
+
+### Retry behavior
+
+Failed deliveries land in the per-tenant dead-letter folder. Replay via:
+
+```
+POST /admin/webhooks/replay/{tenant_id}/{event_id}
+```

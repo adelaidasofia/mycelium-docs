@@ -1,0 +1,50 @@
+---
+title: "SAP"
+description: "Ingest SAP ERP business events into typed memory"
+---
+
+SAP uses a webhook receiver (paid runtime) via SAP Event Mesh or SAP Integration Suite.
+
+## Webhook receiver (paid runtime)
+
+```
+POST /webhooks/sap/{tenant_id}
+```
+
+**Signature:** SAP Event Mesh delivers messages with an `Authorization: Bearer` header (OAuth 2.0 client credentials). The runtime validates the token against the SAP OAuth token endpoint.
+
+### Setup
+
+**Option A — SAP Event Mesh (recommended for BTP)**
+
+1. In SAP BTP, create an Event Mesh service instance.
+2. Create a webhook subscription pointing to `https://runtime.myceliumai.co/webhooks/sap/{your_tenant_id}`.
+3. Configure the topic bindings for the business events you want to ingest.
+4. Add to the runtime env:
+   - `SAP_EVENT_MESH_CLIENT_ID_{TENANT_ID}`
+   - `SAP_EVENT_MESH_CLIENT_SECRET_{TENANT_ID}`
+   - `SAP_EVENT_MESH_TOKEN_URL_{TENANT_ID}`
+
+**Option B — SAP Integration Suite / CPI**
+
+Configure an iFlow that calls the Mycelium webhook endpoint as an HTTP adapter after each business event trigger.
+
+### Events ingested
+
+| SAP module         | Memory category | Notes                                               |
+|--------------------|-----------------|-----------------------------------------------------|
+| SD: Order created  | decision        | Sales order captured with line items summary        |
+| MM: PO approved    | decision        | Purchase order approval                             |
+| FI: Invoice posted | fact            | Invoice metadata; amounts conditional on PII config |
+| HR: PA action      | relationship    | Personnel actions (hire, transfer, departure)       |
+| QM: Defect         | exception       | Quality notification opened                        |
+
+**PII and financial data:** Monetary amounts and personal data fields are excluded by default. Configure `sap.exclude_fields` in the connector config.
+
+### Retry behavior
+
+Failed deliveries land in the per-tenant dead-letter folder. Replay via:
+
+```
+POST /admin/webhooks/replay/{tenant_id}/{event_id}
+```

@@ -1,0 +1,43 @@
+---
+title: "HubSpot"
+description: "Ingest HubSpot CRM contacts, deals, and timeline events into typed memory"
+---
+
+HubSpot uses a webhook receiver (paid runtime).
+
+## Webhook receiver (paid runtime)
+
+```
+POST /webhooks/hubspot/{tenant_id}
+```
+
+**Signature:** HubSpot signs payloads with `X-HubSpot-Signature` (HMAC-SHA256 of `{client_secret}{http_body}`). The receiver validates the HMAC against the per-tenant client secret.
+
+### Setup
+
+1. In HubSpot, go to **Settings > Integrations > Private Apps** (or create a public app for OAuth).
+2. Create a private app with scopes: `crm.objects.contacts.read`, `crm.objects.deals.read`, `crm.objects.companies.read`, `timeline`.
+3. In the app's Webhooks settings, add a webhook subscription for `https://runtime.myceliumai.co/webhooks/hubspot/{your_tenant_id}`.
+4. Subscribe to events: **Contact Created**, **Deal Stage Changed**, **Company Created**, **Timeline Event Created**.
+5. Add to the runtime env:
+   - `HUBSPOT_CLIENT_SECRET_{TENANT_ID}` (for signature validation)
+   - `HUBSPOT_APP_ID_{TENANT_ID}`
+
+### Events ingested
+
+| HubSpot event          | Memory category | Notes                                               |
+|------------------------|-----------------|-----------------------------------------------------|
+| Contact created        | relationship    | Name, email, company, source                        |
+| Deal stage changed     | decision        | Stage progression captured as decision              |
+| Deal closed-won        | decision        | Amount, close date, associated contacts             |
+| Deal closed-lost       | exception       | Reason captured if populated                        |
+| Company created        | relationship    | Company profile and initial properties              |
+| Timeline event         | fact            | Custom timeline events                              |
+
+### Retry behavior
+
+Failed deliveries land in the per-tenant dead-letter folder. Replay via:
+
+```
+POST /admin/webhooks/replay/{tenant_id}/{event_id}
+```

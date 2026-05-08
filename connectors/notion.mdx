@@ -1,0 +1,47 @@
+---
+title: "Notion"
+description: "Ingest Notion databases and pages into typed memory"
+---
+
+Notion is one of the six sources with both an open-source ingest skill and a paid webhook receiver.
+
+## Open-source ingest skill
+
+Pull a Notion database or page tree into `External Inputs/Notion/<database>/<YYYY-MM-DD>.md`. Requires a Notion internal integration token with read access to the relevant pages.
+
+```
+/ingest-notion "Sprint Planning" --depth 2
+```
+
+## Webhook receiver (paid runtime)
+
+Real-time push from Notion webhooks (available on paid Notion plans).
+
+```
+POST /webhooks/notion/{tenant_id}
+```
+
+**Signature:** Notion signs payloads with `X-Notion-Signature`. The receiver validates and processes page and database update events.
+
+### Setup
+
+1. Create a Notion integration at [notion.so/my-integrations](https://notion.so/my-integrations). Grant read access to the pages and databases you want to ingest.
+2. In the integration settings, add the webhook URL: `https://runtime.myceliumai.co/webhooks/notion/{your_tenant_id}`.
+3. Copy the signing secret and add it to the runtime: `NOTION_WEBHOOK_SECRET_{TENANT_ID}` in your env.
+4. Share the relevant pages and databases with the integration from Notion.
+
+### Events ingested
+
+| Notion event       | Memory category | Notes                                                |
+|--------------------|-----------------|------------------------------------------------------|
+| Page created       | fact            | New page in a tracked database                       |
+| Page updated       | fact            | Content edits; prior version retained in git         |
+| Database item      | decision / fact | Depends on database template type                    |
+
+### Retry behavior
+
+Failed deliveries land in the per-tenant dead-letter folder. Replay via:
+
+```
+POST /admin/webhooks/replay/{tenant_id}/{event_id}
+```

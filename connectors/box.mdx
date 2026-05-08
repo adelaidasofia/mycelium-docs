@@ -1,0 +1,44 @@
+---
+title: "Box"
+description: "Ingest Box file events and collaboration activity into typed memory"
+---
+
+Box uses a webhook receiver (paid runtime).
+
+## Webhook receiver (paid runtime)
+
+```
+POST /webhooks/box/{tenant_id}
+```
+
+**Signature:** Box signs payloads with `BOX-SIGNATURE-PRIMARY` and `BOX-SIGNATURE-SECONDARY` (HMAC-SHA256). The receiver validates the primary signature, falling back to secondary for rotation safety.
+
+### Setup
+
+1. Create a Box App at [developer.box.com](https://developer.box.com). Use Server Authentication (JWT) for service account access.
+2. Request the following App Scopes: **Manage webhooks**, **Read all files and folders stored in Box**, **Manage retention policies**.
+3. Create a webhook in the Box Developer Console pointing to `https://runtime.myceliumai.co/webhooks/box/{your_tenant_id}`.
+4. Select triggers: **FILE.UPLOADED**, **FILE.TRASHED**, **FOLDER.CREATED**, **COLLABORATION.ACCEPTED**.
+5. Add to the runtime env:
+   - `BOX_CLIENT_ID_{TENANT_ID}`
+   - `BOX_CLIENT_SECRET_{TENANT_ID}`
+   - `BOX_ENTERPRISE_ID_{TENANT_ID}`
+   - `BOX_PRIMARY_KEY_{TENANT_ID}` and `BOX_SECONDARY_KEY_{TENANT_ID}` (webhook signing keys)
+
+### Events ingested
+
+| Box event              | Memory category | Notes                                               |
+|------------------------|-----------------|-----------------------------------------------------|
+| FILE.UPLOADED          | fact            | File metadata; content not stored                   |
+| FILE.MODIFIED          | fact            | Edit event; version number captured                 |
+| FILE.TRASHED           | fact            | Deletion event logged                               |
+| FOLDER.CREATED         | fact            | New folder structure                                |
+| COLLABORATION.ACCEPTED | relationship    | Access grants captured                              |
+
+### Retry behavior
+
+Failed deliveries land in the per-tenant dead-letter folder. Replay via:
+
+```
+POST /admin/webhooks/replay/{tenant_id}/{event_id}
+```

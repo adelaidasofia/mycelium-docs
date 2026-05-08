@@ -1,0 +1,37 @@
+---
+title: "TypeScript"
+description: "TypeScript SDK status"
+---
+
+A TypeScript SDK is in development. It ships out of the [diazroa-concierge](https://concierge.diazroa.com) codebase, where it has been used in production for guest-facing booking flows since early 2026.
+
+## Install
+
+```bash
+# planned, after extraction from concierge
+npm install @myceliumai/sdk
+```
+
+## Status
+
+The TypeScript surface is currently an internal package inside the concierge. Public package extraction is planned.
+
+Surface (when shipped):
+
+```typescript
+import { MyceliumClient } from "@myceliumai/sdk";
+
+const client = new MyceliumClient({
+  baseUrl: "https://runtime.myceliumai.co",
+  apiKey: process.env.MYCELIUM_API_KEY,
+});
+
+const decision = await client.memory.decisions.create({
+  title: "Move to weekly review cadence",
+  body: "...",
+  tenantId: "acme-corp",
+  validFrom: "2026-04-15",
+});
+```
+
+For early-access status, contact us through the marketing site.

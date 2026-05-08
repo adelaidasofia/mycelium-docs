@@ -1,0 +1,69 @@
+---
+title: "Skills"
+description: "Every skill shipped in the open-source substrate"
+---
+
+Skills are the executable layer. Each one is a slash command that the agent runs deterministically against the vault. The list below covers the open-source set in [ai-brain-starter](https://github.com/adelaidasofia/ai-brain-starter).
+
+## Daily operation
+
+| Skill                | Trigger                  | What it does                                                              |
+|----------------------|--------------------------|---------------------------------------------------------------------------|
+| `daily-journal`      | `/journal`               | Conversational journal entry, floor-tagged, saved as Obsidian note.       |
+| `meeting-todos`      | `/meeting-todos`         | Extract action items from a meeting note; route to canonical to-do lists. |
+| `repurpose-talk`     | `/repurpose-talk`        | Turn a talk transcript into 10-30 pieces of content.                      |
+| `insights`           | `/weekly` / `/monthly`   | Pattern recognition over journal corpus + advisory panel review.          |
+| `sunday-review`      | `/sunday-review`         | Orchestrated weekly meta-review.                                          |
+
+## Knowledge graph
+
+| Skill                  | Trigger                 | What it does                                                       |
+|------------------------|-------------------------|--------------------------------------------------------------------|
+| `graphify`             | `/graphify`             | Build a knowledge graph from any input corpus.                     |
+| `second-brain-mapping` | `/second-brain-mapping` | Extract typed metadata, optionally graphify, apply wikilinks.      |
+| `patterns`             | `/patterns`             | Detect recurring patterns in sessions and journals; codify them.   |
+| `resolver-query`       | `/resolver-query`       | Look up which rule applies to a natural-language question.         |
+
+## Decision-making
+
+| Skill          | Trigger        | What it does                                                  |
+|----------------|----------------|---------------------------------------------------------------|
+| `deconstruct`  | `/deconstruct` | First-principles analyst: assumptions, truths, leverage move. |
+
+## Ingest
+
+| Skill              | Trigger                                              | Source            |
+|--------------------|------------------------------------------------------|-------------------|
+| `ingest-slack`     | `/ingest-slack <channel> [--days N]`                 | Slack             |
+| `ingest-github`    | `/ingest-github <owner/repo> [--days N]`             | GitHub            |
+| `ingest-notion`    | `/ingest-notion <database-or-page> [--depth N]`      | Notion            |
+| `ingest-linear`    | `/ingest-linear <team-or-project> [--days N]`        | Linear            |
+| `ingest-gmail`     | `/ingest-gmail <label-or-query> [--days N]`          | Gmail             |
+| `ingest-whatsapp`  | `/ingest-whatsapp <chat-name> [--days N]`            | WhatsApp          |
+
+## Synthesis
+
+| Skill                      | Trigger                  | What it does                                          |
+|----------------------------|--------------------------|-------------------------------------------------------|
+| `synth-pr-to-sop`          | `/synth-pr-to-sop`       | Turn a merged PR into a workflow SOP entry.           |
+| `synth-thread-to-sop`      | `/synth-thread-to-sop`   | Turn a resolved Slack thread into a typed memory.     |
+| `extract-rules-from-vault` | `/extract-rules`         | Walk a corpus, emit draft hookify rules + skills.     |
+
+## Setup and diagnostics
+
+| Skill                 | Trigger                | What it does                                                       |
+|-----------------------|------------------------|--------------------------------------------------------------------|
+| `setup-vault-types`   | `/setup-vault-types`   | Configure which document types the vault uses.                     |
+| `diagnose`            | `/diagnose`            | Self-check: install, hooks, MCPs, journal index, freshness.        |
+| `for-my-team`         | `/for-my-team`         | Walk through what changes for a team install.                      |
+
+## Specialty
+
+| Skill                         | Trigger                  | What it does                                                    |
+|-------------------------------|--------------------------|-----------------------------------------------------------------|
+| `humanizer`                   | `/humanizer`             | Remove signs of AI-generated writing, anchor to author voice.   |
+| `nano-banana`                 | (image tasks)            | Image generation and composition via Gemini 3 Pro Image.        |
+| `remotion-best-practices`     | (Remotion projects)      | Reference for React-based video composition.                    |
+| `security-snapshot`           | `/security-snapshot`     | Generate a passive security report for a prospect domain.       |
+
+The full skill list is enumerated in the substrate repo at `skills/`. Skills compose: a `/sunday-review` invocation calls `/weekly` then `/patterns` then a vault-hygiene pass.

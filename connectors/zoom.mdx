@@ -1,0 +1,42 @@
+---
+title: "Zoom"
+description: "Ingest Zoom meeting recordings, transcripts, and chat into typed memory"
+---
+
+Zoom uses a webhook receiver (paid runtime).
+
+## Webhook receiver (paid runtime)
+
+```
+POST /webhooks/zoom/{tenant_id}
+```
+
+**Signature:** Zoom signs every payload with a `x-zm-request-timestamp` and `x-zm-signature` (HMAC-SHA256 of `v0:{timestamp}:{body}`). The receiver validates the HMAC and rejects replays older than 5 minutes.
+
+### Setup
+
+1. Create a Zoom app (Server-to-Server OAuth or Webhook-only) at [marketplace.zoom.us](https://marketplace.zoom.us).
+2. Enable event subscriptions and add `https://runtime.myceliumai.co/webhooks/zoom/{your_tenant_id}` as the endpoint URL.
+3. Select events: **Meeting Started**, **Meeting Ended**, **Recording Completed**, **Chat Message Sent** (if Chat is enabled).
+4. Add to the runtime env:
+   - `ZOOM_WEBHOOK_SECRET_TOKEN_{TENANT_ID}` (the secret token from the app setup)
+   - `ZOOM_ACCOUNT_ID_{TENANT_ID}` (for OAuth flows)
+   - `ZOOM_CLIENT_ID_{TENANT_ID}` and `ZOOM_CLIENT_SECRET_{TENANT_ID}` (for fetching transcripts)
+
+### Events ingested
+
+| Zoom event              | Memory category | Notes                                               |
+|-------------------------|-----------------|-----------------------------------------------------|
+| `meeting.ended`         | fact            | Participants, duration, date                        |
+| `recording.completed`   | fact            | Transcript text extracted and stored                |
+| `chat_message.sent`     | fact            | Zoom Chat messages in tracked channels              |
+
+Transcripts are fetched asynchronously after `recording.completed` fires. Zoom Cloud Recordings must be enabled on the account.
+
+### Retry behavior
+
+Failed deliveries land in the per-tenant dead-letter folder. Replay via:
+
+```
+POST /admin/webhooks/replay/{tenant_id}/{event_id}
+```

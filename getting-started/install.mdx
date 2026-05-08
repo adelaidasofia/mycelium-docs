@@ -1,0 +1,44 @@
+---
+title: "Install"
+description: "Three install paths for the open-source substrate"
+---
+
+The substrate is the open-source [ai-brain-starter](https://github.com/adelaidasofia/ai-brain-starter) repo. Three install paths, ordered from least to most technical.
+
+## Paste-prompt for Claude Code
+
+Easiest path. Paste the install prompt into a fresh Claude Code session and let the harness scaffold the vault for you.
+
+```
+Install ai-brain-starter into ~/Documents/MyVault.
+Read the README at github.com/adelaidasofia/ai-brain-starter and follow it end to end.
+```
+
+Claude reads the public README, clones the repo, and runs `bootstrap.sh` (macOS / Linux) or `bootstrap.ps1` (Windows). Takes about three minutes.
+
+## Plugin marketplace
+
+If you already use the Claude Code plugin marketplace, search for `ai-brain-starter` and install. The marketplace handles cloning and registering hooks.
+
+## Manual git clone
+
+For operators who want full control:
+
+```bash
+git clone https://github.com/adelaidasofia/ai-brain-starter ~/Documents/MyVault
+cd ~/Documents/MyVault
+./bootstrap.sh
+```
+
+The bootstrap script:
+
+1. Creates the vault folder structure (`Meta/`, `Sessions/`, `External Inputs/`).
+2. Writes a starter `CLAUDE.md` with placeholders.
+3. Registers the `~/.claude/hooks/` and `~/.claude/skills/` symlinks.
+4. Prompts you for tenant context (name, role, email).
+
+After install, open the vault in Obsidian and run `/diagnose` from a Claude Code session to verify the install passed every check.
+
+## Paid runtime
+
+The hosted runtime (per-tenant JWTs, audit log, webhook receivers, RBAC, dashboards) is a paid layer on top of the open-source substrate. See [/byoc](/self-host/byoc) for self-host or contact us at the [marketing site](https://myceliumai.co) for the managed offering.

@@ -1,0 +1,49 @@
+---
+title: "Java"
+description: "Java SDK for JVM-shop platform teams"
+---
+
+The Java SDK lives at [github.com/adelaidasofia/mycelium-sdk-java](https://github.com/adelaidasofia/mycelium-sdk-java). MIT licensed.
+
+The SDK targets JDK 17+ and ships through Maven Central once v1.0.0 tags. Until then, build from source by cloning the repo and running `mvn install`.
+
+## Install (after Maven Central publish)
+
+```xml
+<dependency>
+  <groupId>co.myceliumai</groupId>
+  <artifactId>mycelium-sdk</artifactId>
+  <version>0.1.0</version>
+</dependency>
+```
+
+## Quickstart
+
+```java
+import co.myceliumai.sdk.MyceliumClient;
+import co.myceliumai.sdk.MemoryEntry;
+
+MyceliumClient client = new MyceliumClient(
+    "https://runtime.myceliumai.co",
+    System.getenv("MYCELIUM_API_KEY")
+);
+
+MemoryEntry decision = new MemoryEntry();
+decision.setTenantId("acme-corp");
+decision.setType("decision");
+decision.setTitle("Move to weekly review cadence");
+decision.setValidFrom("2026-04-15");
+
+MemoryEntry created = client.write(decision);
+System.out.println("Created entry: " + created.getId());
+```
+
+## Why Java
+
+JVM shops with platform teams (banks, insurers, public sector, manufacturing) cannot adopt a Python-only or Node-only runtime. The Java SDK closes that gap. Spring Boot integration is on the roadmap.
+
+## Status
+
+The repo is currently a scaffold. Surface is stable enough to compile against; underlying runtime API is stabilizing through Round 3 connectors. v1.0.0 tag and Maven Central publish gate on the runtime API freeze.
+
+Contributing: see [CONTRIBUTING.md](https://github.com/adelaidasofia/mycelium-sdk-java/blob/main/CONTRIBUTING.md) in the repo.

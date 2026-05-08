@@ -1,0 +1,44 @@
+---
+title: "Resolver"
+description: "Bi-temporal queries and deterministic rule routing"
+---
+
+Given a natural-language question, the resolver picks the right rule from the vault and returns its file path plus the matching content. No LLM-as-judge in the routing step.
+
+## Bi-temporal queries
+
+Every entry carries two date fields:
+
+- `valid_from`: when the rule started applying in the world.
+- `valid_to`: when it stopped applying. `null` means still active.
+
+Plus a third, system-managed field:
+
+- `recorded_at`: when the rule was written into the vault.
+
+This separation matters when you ask "what did we decide about X?" versus "what is our current rule about X?" versus "what did we know on date Y?":
+
+| Question                                | Filter                                                |
+|-----------------------------------------|-------------------------------------------------------|
+| Current rule                            | `valid_to is null AND valid_from <= today`            |
+| Active on date Y                        | `valid_from <= Y AND (valid_to is null OR valid_to > Y)` |
+| What we knew on date Y                  | `recorded_at <= Y AND (valid_to is null OR valid_to > Y)` |
+
+The third filter is the audit-replay query: it reconstructs the agent's view of the world at any past point in time.
+
+## Deterministic routing
+
+A query routes to one or more rules through a layered match:
+
+1. Exact concept match (the question's noun phrase appears in a rule's `title`).
+2. Tag match (the question's intent maps to a tag, e.g., "pricing change" → `pricing`).
+3. Embedding fallback (cosine over title + summary, top-k=5 candidates).
+4. The agent picks one candidate and cites the file path. The pick is logged with the query, candidates considered, and reason chosen.
+
+Steps 1-3 are deterministic Python. Step 4 is LLM, but constrained: the candidate set is fixed, the citation is required, and the picked rule is verifiable by the operator at audit time.
+
+## Why this matters
+
+Most retrieval setups blur "current rule" with "all rules ever written" by ranking on similarity alone. The resolver's bi-temporal layer prevents the agent from quoting a deprecated rule as if it still applied. The deterministic routing layer prevents the agent from choosing among irrelevant candidates.
+
+The combination is what makes "the agent runs the process" feasible: when the rule changes, the change is dated, the audit trail is queryable, and the agent never confidently quotes the version that stopped applying last quarter.

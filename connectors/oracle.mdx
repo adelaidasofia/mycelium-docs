@@ -1,0 +1,49 @@
+---
+title: "Oracle"
+description: "Ingest Oracle ERP and HCM events into typed memory"
+---
+
+Oracle uses a webhook receiver (paid runtime) via Oracle Integration Cloud (OIC) or Oracle Business Events.
+
+## Webhook receiver (paid runtime)
+
+```
+POST /webhooks/oracle/{tenant_id}
+```
+
+**Signature:** Oracle OIC calls are authenticated with HTTP Basic Auth or OAuth 2.0. The runtime supports both; OAuth 2.0 client credentials is recommended.
+
+### Setup
+
+**Option A — Oracle Integration Cloud**
+
+1. Create an Integration in OIC with an App-Driven Orchestration pattern.
+2. Add the Mycelium REST Adapter as the invoke endpoint: `https://runtime.myceliumai.co/webhooks/oracle/{your_tenant_id}`.
+3. Map the Oracle Business Event payload to the Mycelium schema in the mapper step.
+4. Activate the integration.
+5. Add to the runtime env:
+   - `ORACLE_OIC_CLIENT_ID_{TENANT_ID}`
+   - `ORACLE_OIC_CLIENT_SECRET_{TENANT_ID}`
+   - `ORACLE_OIC_TOKEN_URL_{TENANT_ID}`
+
+**Option B — Oracle BPEL / SOA Suite**
+
+Configure a partner link in BPEL to invoke the Mycelium REST endpoint from an event-driven process.
+
+### Events ingested
+
+| Oracle module      | Memory category | Notes                                               |
+|--------------------|-----------------|-----------------------------------------------------|
+| ERP: AP Invoice    | fact            | Invoice approval events                             |
+| ERP: GL Journal    | fact            | Journal entry posted                                |
+| HCM: Worker hire   | relationship    | New employee captured                               |
+| HCM: Assignment    | relationship    | Role and organization assignment changes            |
+| SCM: PO approved   | decision        | Procurement decisions                               |
+
+### Retry behavior
+
+Failed deliveries land in the per-tenant dead-letter folder. Replay via:
+
+```
+POST /admin/webhooks/replay/{tenant_id}/{event_id}
+```

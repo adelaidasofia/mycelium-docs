@@ -1,0 +1,185 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "Mycelium docs",
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "favicon": "/favicon.svg",
+  "colors": {
+    "primary": "#5eead4",
+    "light": "#a8f4e6",
+    "dark": "#1ec4ad",
+    "background": {
+      "light": "#ffffff",
+      "dark": "#06090a"
+    },
+    "anchors": {
+      "from": "#5eead4",
+      "to": "#a78bfa"
+    }
+  },
+  "topbarLinks": [
+    {
+      "name": "Marketing site",
+      "url": "https://myceliumai.co"
+    }
+  ],
+  "topbarCtaButton": {
+    "name": "Install",
+    "url": "/getting-started/install"
+  },
+  "tabs": [
+    {
+      "name": "Documentation",
+      "url": "/"
+    },
+    {
+      "name": "API Reference",
+      "url": "api-reference"
+    }
+  ],
+  "anchors": [
+    {
+      "name": "GitHub",
+      "icon": "github",
+      "url": "https://github.com/adelaidasofia/ai-brain-starter"
+    },
+    {
+      "name": "Trust",
+      "icon": "shield-check",
+      "url": "https://myceliumai.co/trust"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Getting Started",
+      "pages": [
+        "getting-started/install",
+        "getting-started/quickstart"
+      ]
+    },
+    {
+      "group": "Architecture",
+      "pages": [
+        "architecture/overview",
+        "architecture/typed-memory",
+        "architecture/resolver",
+        "architecture/karpathy-pattern"
+      ]
+    },
+    {
+      "group": "Connectors",
+      "pages": [
+        "connectors/index"
+      ]
+    },
+    {
+      "group": "Communication",
+      "pages": [
+        "connectors/slack",
+        "connectors/gmail",
+        "connectors/microsoft365",
+        "connectors/google-workspace",
+        "connectors/whatsapp",
+        "connectors/zoom"
+      ]
+    },
+    {
+      "group": "Engineering",
+      "pages": [
+        "connectors/github",
+        "connectors/gitlab",
+        "connectors/linear",
+        "connectors/jira",
+        "connectors/confluence"
+      ]
+    },
+    {
+      "group": "Productivity",
+      "pages": [
+        "connectors/notion",
+        "connectors/box",
+        "connectors/dropbox"
+      ]
+    },
+    {
+      "group": "CRM and Sales",
+      "pages": [
+        "connectors/salesforce",
+        "connectors/hubspot"
+      ]
+    },
+    {
+      "group": "HR and Finance",
+      "pages": [
+        "connectors/workday",
+        "connectors/adp",
+        "connectors/sap",
+        "connectors/oracle"
+      ]
+    },
+    {
+      "group": "Data",
+      "pages": [
+        "connectors/snowflake",
+        "connectors/databricks"
+      ]
+    },
+    {
+      "group": "ITSM",
+      "pages": [
+        "connectors/servicenow"
+      ]
+    },
+    {
+      "group": "Skills",
+      "pages": [
+        "skills/index"
+      ]
+    },
+    {
+      "group": "Reliability",
+      "pages": [
+        "reliability/manifesto"
+      ]
+    },
+    {
+      "group": "Security",
+      "pages": [
+        "security/posture"
+      ]
+    },
+    {
+      "group": "API Reference",
+      "pages": [
+        "api-reference/runtime"
+      ]
+    },
+    {
+      "group": "SDK",
+      "pages": [
+        "sdk/python",
+        "sdk/typescript",
+        "sdk/java",
+        "sdk/go"
+      ]
+    },
+    {
+      "group": "Self-Host",
+      "pages": [
+        "self-host/byoc",
+        "self-host/airgapped"
+      ]
+    },
+    {
+      "group": "Vertical Packs",
+      "pages": [
+        "vertical-packs/index"
+      ]
+    }
+  ],
+  "footerSocials": {
+    "github": "https://github.com/adelaidasofia/ai-brain-starter"
+  }
+}

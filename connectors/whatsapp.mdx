@@ -1,0 +1,52 @@
+---
+title: "WhatsApp"
+description: "Ingest WhatsApp messages and voice notes into typed memory"
+---
+
+WhatsApp uses an in-process bridge rather than an HTTP webhook receiver. The bridge connects to the WhatsApp multi-device protocol and exports to the vault on a configurable cadence.
+
+## Open-source ingest skill
+
+Pull recent messages from a named WhatsApp chat into `External Inputs/WhatsApp/<contact>/<YYYY-MM-DD>.md`. Requires the WhatsApp bridge running locally.
+
+```
+/ingest-whatsapp "Nelly Ortiz" --days 7
+```
+
+Voice notes are transcribed by the bridge before export. Each voice note renders inline as `[Voice note] <transcript>`.
+
+## Bridge setup (paid runtime)
+
+The bridge is a Go binary that connects to the WhatsApp Web multi-device API. It runs as a sidecar to the runtime, not as an HTTP endpoint.
+
+### Prerequisites
+
+- WhatsApp account with multi-device enabled.
+- Bridge binary deployed alongside the runtime container.
+
+### Configuration
+
+```yaml
+# bridge.yaml
+bridge:
+  vault_export_path: vaults/{tenant_id}/External Inputs/WhatsApp/
+  transcription: whisper-base  # or whisper-small for higher accuracy
+  export_interval_hours: 4
+  pending_transcript_timeout_seconds: 180
+```
+
+### What gets exported
+
+| Content type    | Memory category | Notes                                               |
+|-----------------|-----------------|-----------------------------------------------------|
+| Text message    | fact            | Sender, timestamp, thread context                   |
+| Voice note      | fact            | Transcript inline; bare `[Voice note]` if expired  |
+| Shared document | fact            | File name and type; content not ingested            |
+
+### Privacy
+
+Voice note audio is never stored in the vault. Only the transcript lands in the markdown file. Audio files are processed in memory and discarded.
+
+### Retry
+
+Voice note transcription retries automatically on failure. Expired audio (deleted from WhatsApp's servers before bridge captured it) is logged as `orphan_no_keys` and marked as a bare `[Voice note]` with no transcript.

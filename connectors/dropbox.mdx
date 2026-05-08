@@ -1,0 +1,46 @@
+---
+title: "Dropbox"
+description: "Ingest Dropbox file changes and Paper documents into typed memory"
+---
+
+Dropbox uses a webhook receiver (paid runtime).
+
+## Webhook receiver (paid runtime)
+
+Dropbox uses a two-step webhook pattern: a GET challenge for verification, then POST notifications.
+
+```
+GET  /webhooks/dropbox/{tenant_id}  (verification challenge)
+POST /webhooks/dropbox/{tenant_id}  (change notifications)
+```
+
+**Signature:** Dropbox signs POST payloads with `X-Dropbox-Signature` (HMAC-SHA256 of the raw body using the app secret). The receiver validates the HMAC.
+
+### Setup
+
+1. Create a Dropbox App at [dropbox.com/developers](https://www.dropbox.com/developers). Use **Scoped access**, full Dropbox or app folder.
+2. In the app settings, add `https://runtime.myceliumai.co/webhooks/dropbox/{your_tenant_id}` as a webhook URI.
+3. Required permissions: `files.metadata.read`, `files.content.read`, `sharing.read`.
+4. Add to the runtime env:
+   - `DROPBOX_APP_KEY_{TENANT_ID}`
+   - `DROPBOX_APP_SECRET_{TENANT_ID}` (used for signature validation and OAuth)
+   - `DROPBOX_REFRESH_TOKEN_{TENANT_ID}` (long-lived OAuth 2.0 refresh token)
+
+### Events ingested
+
+Dropbox webhooks only signal that changes occurred for a user; the runtime fetches the delta via the `/files/list_folder/continue` endpoint on notification.
+
+| Dropbox event   | Memory category | Notes                                               |
+|-----------------|-----------------|-----------------------------------------------------|
+| File added      | fact            | File metadata; content not stored                   |
+| File modified   | fact            | Edit event; revision captured                       |
+| File deleted    | fact            | Deletion event logged                               |
+| Folder shared   | relationship    | Sharing events captured                             |
+
+### Retry behavior
+
+Failed deliveries land in the per-tenant dead-letter folder. Replay via:
+
+```
+POST /admin/webhooks/replay/{tenant_id}/{event_id}
+```

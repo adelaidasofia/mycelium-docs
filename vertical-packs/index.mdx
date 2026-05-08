@@ -1,0 +1,56 @@
+---
+title: "Vertical packs"
+description: "Industry-specific overlays on top of the substrate"
+---
+
+Vertical packs are pre-configured overlays on top of the substrate. Each pack ships with industry-specific schemas, hooks, and starter rules so a new install in that vertical does not start blank.
+
+Five packs ship today.
+
+## Legal
+
+For law firms and in-house legal teams.
+
+- **Schemas:** matter, party, clause, citation, version-controlled redline.
+- **Hooks:** privilege flag enforcement, jurisdictional rule routing, citation format check.
+- **Starter rules:** retention schedules, conflict-check workflow, document-management rituals.
+
+## Finance
+
+For asset managers, IBs, and fintech teams subject to FINRA / SEC retention rules.
+
+- **Schemas:** trade, position, counterparty, regulatory disclosure, retention bucket.
+- **Hooks:** retention enforcement, restricted-list check, MNPI tagging.
+- **Starter rules:** trade-blotter cadence, monthly compliance review, retention pinning.
+
+## Healthcare
+
+For health systems, payers, and clinical-research teams under HIPAA + FDA + ICH-GCP.
+
+- **Schemas:** patient cohort, study protocol, AE/SAE, IRB record, audit trail.
+- **Hooks:** PHI masking, IRB-status enforcement, 21 CFR Part 11 audit-log requirements.
+- **Starter rules:** AE reporting cadence, IRB submission workflow, retention.
+
+## Manufacturing
+
+For industrial operators with SCADA, MES, and ERP overlap.
+
+- **Schemas:** asset, work order, BOM, change order, downtime event.
+- **Hooks:** safety-incident routing, change-control approval gates.
+- **Starter rules:** shift handoff, root-cause review, MTBF tracking.
+
+## Public sector
+
+For agencies under FOIA and FedRAMP-equivalent constraints.
+
+- **Schemas:** request, response, exemption, redaction record, retention class.
+- **Hooks:** FOIA timeline enforcement, classification handling, retention enforcement.
+- **Starter rules:** intake routing, response cadence, audit packet generation.
+
+## How to use a pack
+
+A pack ships as a folder under `vertical-packs/<vertical>/` in the substrate repo. The substrate's `setup-vault-types` skill detects the pack and prompts to enable matching extractors. After enabling, the pack's hooks register automatically and the starter rules become draft entries the operator reviews.
+
+## Adding a pack
+
+The pack format is documented in the substrate repo at `vertical-packs/_template/`. New packs welcome through PR; substantial new packs (a vertical not on the list above) should open an issue first to scope.

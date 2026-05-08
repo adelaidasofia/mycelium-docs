@@ -1,0 +1,48 @@
+---
+title: "Microsoft 365"
+description: "Ingest Teams, Exchange, SharePoint, and OneDrive events into typed memory"
+---
+
+Microsoft 365 uses a webhook receiver (paid runtime) via Microsoft Graph change notifications.
+
+## Webhook receiver (paid runtime)
+
+```
+POST /webhooks/microsoft365/{tenant_id}
+```
+
+**Signature:** Microsoft Graph validates webhook endpoints with a `validationToken` challenge on subscription creation. Ongoing notifications arrive with a client state token that the receiver validates.
+
+### Setup
+
+1. Register an Azure AD application with Microsoft Graph API permissions:
+   - `ChannelMessage.Read.All` (Teams messages)
+   - `Mail.Read` (Exchange mail)
+   - `Sites.Read.All` (SharePoint)
+   - `Files.Read.All` (OneDrive)
+2. Create Graph change notification subscriptions pointing to `https://runtime.myceliumai.co/webhooks/microsoft365/{your_tenant_id}`.
+3. Add to the runtime env:
+   - `MS365_TENANT_ID_{TENANT_ID}`
+   - `MS365_CLIENT_ID_{TENANT_ID}`
+   - `MS365_CLIENT_SECRET_{TENANT_ID}`
+   - `MS365_CLIENT_STATE_{TENANT_ID}` (random secret for notification validation)
+
+Graph subscriptions expire every 60 minutes for most resources; the runtime renews automatically.
+
+### Events ingested
+
+| M365 surface      | Memory category | Notes                                               |
+|-------------------|-----------------|-----------------------------------------------------|
+| Teams channel msg | fact            | Thread context, mentions, reactions                 |
+| Teams chat        | fact            | Direct messages and group chats                     |
+| Exchange mail     | fact            | Sender, subject, body excerpt                       |
+| SharePoint page   | fact            | Page edits captured on save                         |
+| OneDrive file     | fact            | File create/modify events; content not stored       |
+
+### Retry behavior
+
+Failed deliveries land in the per-tenant dead-letter folder. Replay via:
+
+```
+POST /admin/webhooks/replay/{tenant_id}/{event_id}
+```

@@ -1,0 +1,59 @@
+---
+title: "Go"
+description: "Go SDK for platform teams and operators"
+---
+
+The Go SDK lives at [github.com/adelaidasofia/mycelium-sdk-go](https://github.com/adelaidasofia/mycelium-sdk-go). MIT licensed.
+
+Targets Go 1.22+.
+
+## Install
+
+```bash
+go get github.com/adelaidasofia/mycelium-sdk-go
+```
+
+## Quickstart
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "log"
+    "os"
+
+    mycelium "github.com/adelaidasofia/mycelium-sdk-go"
+)
+
+func main() {
+    client := mycelium.NewClient(
+        "https://runtime.myceliumai.co",
+        os.Getenv("MYCELIUM_API_KEY"),
+    )
+
+    entry := &mycelium.MemoryEntry{
+        TenantID:  "acme-corp",
+        Type:      "decision",
+        Title:     "Move to weekly review cadence",
+        ValidFrom: "2026-04-15",
+    }
+
+    created, err := client.Write(context.Background(), entry)
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Printf("Created entry: %s\n", created.ID)
+}
+```
+
+## Why Go
+
+Platform teams running on Kubernetes, Cloud Run, and similar substrates often build their orchestration in Go. The Go SDK lets a platform team wire the runtime into existing Go controllers, daemons, and CLI tools without crossing a runtime boundary.
+
+## Status
+
+Scaffold is shipped. The surface compiles and tests pass against a local mock. v1.0.0 tag gates on the runtime API freeze.
+
+Contributing: see [CONTRIBUTING.md](https://github.com/adelaidasofia/mycelium-sdk-go/blob/main/CONTRIBUTING.md) in the repo.

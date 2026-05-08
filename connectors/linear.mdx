@@ -1,0 +1,48 @@
+---
+title: "Linear"
+description: "Ingest Linear issues, projects, and cycles into typed memory"
+---
+
+Linear is one of the six sources with both an open-source ingest skill and a paid webhook receiver.
+
+## Open-source ingest skill
+
+Pull issues and project status from a Linear team or project into `External Inputs/Linear/<team>/<YYYY-MM-DD>.md`. Requires a Linear API key.
+
+```
+/ingest-linear mycelium --days 7
+```
+
+## Webhook receiver (paid runtime)
+
+Real-time push from Linear webhooks.
+
+```
+POST /webhooks/linear/{tenant_id}
+```
+
+**Signature:** Linear signs every payload with `X-Linear-Signature`. The receiver validates the HMAC-SHA256 signature.
+
+### Setup
+
+1. In Linear, go to **Settings > API > Webhooks > Create webhook**.
+2. Set URL to `https://runtime.myceliumai.co/webhooks/linear/{your_tenant_id}`.
+3. Select resources: **Issues**, **Projects**, **Cycles**, **Comments** (recommended).
+4. Copy the signing key and add it to the runtime: `LINEAR_WEBHOOK_SECRET_{TENANT_ID}` in your env.
+
+### Events ingested
+
+| Linear event       | Memory category | Notes                                                |
+|--------------------|-----------------|------------------------------------------------------|
+| Issue created      | exception       | New issue = unresolved exception                     |
+| Issue status change| exception       | Completed = resolved; cancelled = closed             |
+| Project update     | decision        | Status changes, milestone moves                      |
+| Cycle completed    | decision        | Sprint retrospective data                            |
+
+### Retry behavior
+
+Failed deliveries land in the per-tenant dead-letter folder. Replay via:
+
+```
+POST /admin/webhooks/replay/{tenant_id}/{event_id}
+```

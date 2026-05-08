@@ -1,0 +1,52 @@
+---
+title: "BYOC (bring your own cloud)"
+description: "Run the runtime inside the customer VPC"
+---
+
+BYOC keeps customer data inside the customer's cloud account. The runtime ships as a container; the customer brings the VPC, the keys, and the audit forwarding.
+
+For the procurement-ready overview, see the BYOC section on the marketing site at [myceliumai.co/byoc](https://myceliumai.co/byoc).
+
+## What ships
+
+- **Runtime container.** Single image, multi-arch (amd64, arm64). Customer pulls from a private registry.
+- **Helm chart / Terraform module.** Reference deploys for EKS, GKE, AKS, and bare ECS / Cloud Run / Container Apps.
+- **Bootstrap script.** Mints the first tenant, writes the JWT secret to the customer's secrets manager, and registers webhook receiver URLs.
+
+## What the customer brings
+
+- VPC + network policies (the runtime is a stateful service; vault writes hit a persistent volume).
+- KMS keys for vault encryption at rest.
+- SIEM endpoint for audit-log forwarding (Splunk HEC, Datadog, CloudWatch, etc.).
+- DNS names for customer-facing webhook URLs.
+
+## Operational ownership
+
+| Responsibility               | Customer | Vendor |
+|------------------------------|:--------:|:------:|
+| VPC + network policy         | x        |        |
+| KMS keys                     | x        |        |
+| Audit forwarding to SIEM     | x        |        |
+| Container image updates      |          | x      |
+| Helm chart / Terraform module|          | x      |
+| Schema migrations            |          | x      |
+| Connector adapters           |          | x      |
+
+## Versioning
+
+Container images tag against semantic versions. Customer pins a major.minor and pulls patch updates on their schedule. Vendor publishes release notes and CVE advisories.
+
+## Procurement checklist
+
+The standard checklist a security architect runs through:
+
+- DPA signed
+- Sub-processor list reviewed
+- Encryption at rest verified
+- TLS 1.3 verified on all ingress
+- JWT scope semantics verified
+- Audit log forwarding tested end-to-end
+- Disaster recovery runbook reviewed
+- Pen-test report on file
+
+For the procurement-ready security packet, contact us through the marketing site.

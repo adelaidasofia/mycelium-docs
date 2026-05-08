@@ -1,0 +1,50 @@
+---
+title: "GitHub"
+description: "Ingest pull requests, issues, and repository events into typed memory"
+---
+
+GitHub is one of the six sources with both an open-source ingest skill and a paid webhook receiver.
+
+## Open-source ingest skill
+
+Pull PRs, commits, and issues into `External Inputs/GitHub/<owner>/<repo>/<YYYY-MM-DD>.md`. Requires a GitHub personal access token with `repo` scope (or `public_repo` for public repos).
+
+```
+/ingest-github adelaidasofia/ai-brain-starter --days 14
+```
+
+## Webhook receiver (paid runtime)
+
+Real-time push from GitHub webhooks.
+
+```
+POST /webhooks/github/{tenant_id}
+```
+
+**Signature:** GitHub signs every payload with `X-Hub-Signature-256: sha256=<hmac-sha256>`. The receiver validates the HMAC against the per-tenant secret.
+
+### Setup
+
+1. In the repository (or organization), go to **Settings > Webhooks > Add webhook**.
+2. Set Payload URL to `https://runtime.myceliumai.co/webhooks/github/{your_tenant_id}`.
+3. Set Content type to `application/json`.
+4. Enter the signing secret and add it to the runtime: `GITHUB_WEBHOOK_SECRET_{TENANT_ID}` in your env.
+5. Select individual events or send everything. Recommended: **Pull requests**, **Issues**, **Push**, **Releases**.
+
+### Events ingested
+
+| GitHub event       | Memory category | Notes                                                |
+|--------------------|-----------------|------------------------------------------------------|
+| `pull_request`     | decision        | PR merged = decision committed; PR closed = exception |
+| `issues`           | exception       | Issue opened = exception; closed = resolved exception |
+| `push`             | fact            | Commit messages extracted as facts                   |
+| `release`          | decision        | Tagged release captured with release notes           |
+| `create` (branch)  | fact            | Branch creation logged                               |
+
+### Retry behavior
+
+Failed deliveries land in the per-tenant dead-letter folder. Replay via:
+
+```
+POST /admin/webhooks/replay/{tenant_id}/{event_id}
+```

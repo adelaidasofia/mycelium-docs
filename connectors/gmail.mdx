@@ -1,0 +1,49 @@
+---
+title: "Gmail"
+description: "Ingest Gmail messages and threads into typed memory"
+---
+
+Gmail is one of the six sources with both an open-source ingest skill and a paid webhook receiver.
+
+## Open-source ingest skill
+
+Pull email threads by label or search query into `External Inputs/Gmail/<label>/<YYYY-MM-DD>.md`. Uses Gmail API with OAuth 2.0. Requires `gmail.readonly` scope.
+
+```
+/ingest-gmail "label:investor-updates" --days 30
+/ingest-gmail "from:diana@accenture.com" --days 14
+```
+
+## Webhook receiver (paid runtime)
+
+Real-time push via Gmail push notifications (Google Cloud Pub/Sub).
+
+```
+POST /webhooks/gmail/{tenant_id}
+```
+
+**Signature:** Google sends a JWT in the `Authorization: Bearer` header. The receiver validates the JWT against Google's public keys.
+
+### Setup
+
+1. Enable the Gmail API and create a Pub/Sub topic in Google Cloud.
+2. Create a push subscription pointing to `https://runtime.myceliumai.co/webhooks/gmail/{your_tenant_id}`.
+3. Add the Pub/Sub service account as a subscriber.
+4. Set `GMAIL_PUBSUB_AUDIENCE_{TENANT_ID}` and `GMAIL_WATCH_EMAIL_{TENANT_ID}` in the runtime env.
+5. Run `POST https://gmail.googleapis.com/gmail/v1/users/me/watch` with the Pub/Sub topic to start the watch. Watches expire every 7 days; the runtime renews automatically.
+
+### Events ingested
+
+| Gmail event       | Memory category | Notes                                               |
+|-------------------|-----------------|-----------------------------------------------------|
+| New message       | fact            | Sender, subject, body excerpt, thread id            |
+| Label change      | fact            | Applied labels captured as tags                     |
+| Thread reply      | decision        | Thread resolution promoted to decision              |
+
+### Retry behavior
+
+Failed deliveries land in the per-tenant dead-letter folder. Replay via:
+
+```
+POST /admin/webhooks/replay/{tenant_id}/{event_id}
+```

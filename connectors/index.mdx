@@ -1,0 +1,49 @@
+---
+title: "Connectors"
+description: "Substrate skills, webhook receivers, and enterprise connectors"
+---
+
+Connectors bring outside data into the vault and turn it into typed memory. Three layers ship today.
+
+## Layer 1: substrate ingest skills
+
+Slash-command skills that pull data on demand. Output goes to `External Inputs/<Source>/<scope>/<YYYY-MM-DD>.md`. Idempotent: re-running on the same day overwrites cleanly.
+
+| Skill              | Trigger                                              | Source            |
+|--------------------|------------------------------------------------------|-------------------|
+| `ingest-slack`     | `/ingest-slack <channel> [--days N]`                 | Slack             |
+| `ingest-github`    | `/ingest-github <owner/repo> [--days N]`             | GitHub            |
+| `ingest-notion`    | `/ingest-notion <database-or-page> [--depth N]`      | Notion            |
+| `ingest-linear`    | `/ingest-linear <team-or-project> [--days N]`        | Linear            |
+| `ingest-gmail`     | `/ingest-gmail <label-or-query> [--days N]`          | Gmail             |
+| `ingest-whatsapp`  | `/ingest-whatsapp <chat-name> [--days N]`            | WhatsApp          |
+
+These six are the open-source default set. Each one ships in the [ai-brain-starter](https://github.com/adelaidasofia/ai-brain-starter) substrate.
+
+## Layer 2: webhook receivers (paid runtime)
+
+Real-time push from the source. The runtime exposes per-tenant signed URLs at `POST /webhooks/<source>/{tenant_id}`. Each source has its own signature scheme and per-tenant signing secret.
+
+The receivers covered in v1 of the runtime:
+
+- Slack, GitHub, Notion, Linear, Gmail, Salesforce
+- Microsoft 365, Confluence, Google Workspace
+- ServiceNow, Workday, SAP
+- Box, Snowflake, Databricks, Oracle
+- Jira, HubSpot, GitLab, Dropbox, Zoom, ADP
+- WhatsApp (in-process bridge, not HTTP)
+
+Twenty-three sources total. See [API Reference / Runtime](/api-reference/runtime) for the full URL + signature scheme table.
+
+## Layer 3: enterprise connectors (Round 3, 2026)
+
+Seven connectors added for F100 procurement requirements. Each one supports SAML SSO + SCIM provisioning + audit-log forwarding to the customer's SIEM.
+
+The Round 3 set covers the connectors that platform-team buyers ask for first when evaluating an AI runtime. List and integration notes ship here as each one stabilizes.
+
+## Adding a connector
+
+Two paths:
+
+1. **Substrate skill (open source):** add a new `ingest-<source>` skill to ai-brain-starter following the pattern in `skills/_shared/`. PR welcome.
+2. **Webhook receiver (paid runtime):** receivers are added in the runtime repo. Open an issue describing the source, signature scheme, and event shape, and we will scope.

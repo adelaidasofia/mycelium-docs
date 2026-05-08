@@ -1,0 +1,50 @@
+---
+title: "Slack"
+description: "Ingest Slack channels and threads into typed memory"
+---
+
+Slack is one of the six sources with both an open-source ingest skill and a paid webhook receiver.
+
+## Open-source ingest skill
+
+Pull Slack messages into `External Inputs/Slack/<channel>/<YYYY-MM-DD>.md`. Requires a Slack user token or bot token with `channels:history` and `channels:read` scopes.
+
+```
+/ingest-slack #release-planning --days 7
+```
+
+Re-running on the same date overwrites cleanly (idempotent).
+
+## Webhook receiver (paid runtime)
+
+Real-time push from Slack Events API. The runtime exposes a signed endpoint:
+
+```
+POST /webhooks/slack/{tenant_id}
+```
+
+**Signature:** Slack signs every payload with `X-Slack-Signature: v0=<hmac-sha256>` and includes `X-Slack-Request-Timestamp`. The receiver validates the HMAC and rejects replays older than 5 minutes.
+
+### Setup
+
+1. Create a Slack app in your workspace.
+2. Enable Events API. Set the Request URL to `https://runtime.myceliumai.co/webhooks/slack/{your_tenant_id}`.
+3. Subscribe to `message.channels`, `message.groups` (and `message.im` for DM coverage if needed).
+4. Add the signing secret to the runtime: `SLACK_SIGNING_SECRET_{TENANT_ID}` in your env.
+5. Install the app to your workspace and invite it to the channels you want to ingest.
+
+### Events ingested
+
+| Slack event         | Memory category | Notes                                        |
+|---------------------|-----------------|----------------------------------------------|
+| `message.channels`  | fact / decision | Thread resolution auto-promotes to decision  |
+| `message.groups`    | fact            | Private channels require bot membership      |
+| `app_mention`       | fact            | Direct mentions of the bot                   |
+
+### Retry behavior
+
+Failed deliveries land in the per-tenant dead-letter folder. Replay via:
+
+```
+POST /admin/webhooks/replay/{tenant_id}/{event_id}
+```

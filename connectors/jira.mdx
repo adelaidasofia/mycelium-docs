@@ -1,0 +1,41 @@
+---
+title: "Jira"
+description: "Ingest Jira issues, sprints, and project updates into typed memory"
+---
+
+Jira uses a webhook receiver (paid runtime).
+
+## Webhook receiver (paid runtime)
+
+```
+POST /webhooks/jira/{tenant_id}
+```
+
+**Signature:** Jira Cloud webhook payloads are authenticated via a shared secret passed as a URL query parameter (`?token={secret}`). The receiver validates the token against the per-tenant secret.
+
+### Setup
+
+1. In Jira, go to **Settings > System > Webhooks > Create webhook** (requires Jira admin).
+2. Set URL to `https://runtime.myceliumai.co/webhooks/jira/{your_tenant_id}?token={your_secret}`.
+3. Select events: **Issue Created**, **Issue Updated**, **Sprint Started**, **Sprint Completed**, **Version Released**.
+4. Optionally, scope to specific projects using the JQL filter field.
+5. Add the token to the runtime: `JIRA_WEBHOOK_TOKEN_{TENANT_ID}` in your env.
+
+### Events ingested
+
+| Jira event          | Memory category | Notes                                               |
+|---------------------|-----------------|-----------------------------------------------------|
+| Issue created       | exception       | Issue = unresolved exception                        |
+| Issue resolved      | exception       | Resolution status + resolution summary captured     |
+| Sprint started      | decision        | Sprint goal and scope captured as decision          |
+| Sprint completed    | decision        | Velocity and completion rate captured               |
+| Version released    | decision        | Release notes and fix version                       |
+| Issue priority      | exception       | Priority changes tracked as updates                 |
+
+### Retry behavior
+
+Failed deliveries land in the per-tenant dead-letter folder. Replay via:
+
+```
+POST /admin/webhooks/replay/{tenant_id}/{event_id}
+```

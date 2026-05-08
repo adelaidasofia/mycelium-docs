@@ -1,0 +1,42 @@
+---
+title: "Google Workspace"
+description: "Ingest Google Docs, Calendar, Meet, and Drive events into typed memory"
+---
+
+Google Workspace uses a webhook receiver (paid runtime). Gmail has its own connector; this one covers the rest of the Workspace surface.
+
+## Webhook receiver (paid runtime)
+
+```
+POST /webhooks/google_workspace/{tenant_id}
+```
+
+**Signature:** Google sends a JWT in the `Authorization: Bearer` header for Pub/Sub push subscriptions. The receiver validates against Google's public keys.
+
+### Setup
+
+1. Enable the Google Workspace Admin SDK, Calendar API, Drive API, and Docs API in Google Cloud.
+2. Create a Pub/Sub topic for each surface you want to ingest.
+3. Create push subscriptions pointing to `https://runtime.myceliumai.co/webhooks/google_workspace/{your_tenant_id}`.
+4. For Calendar and Drive, register domain-wide push channels via the respective API's `watch` endpoints.
+5. Add to the runtime env:
+   - `GOOGLE_WORKSPACE_SERVICE_ACCOUNT_{TENANT_ID}` (JSON, base64-encoded)
+   - `GOOGLE_WORKSPACE_DOMAIN_{TENANT_ID}`
+
+### Events ingested
+
+| Workspace surface | Memory category | Notes                                               |
+|-------------------|-----------------|-----------------------------------------------------|
+| Google Doc        | fact            | Document edits tracked as fact entries              |
+| Google Calendar   | fact            | Event created, updated, cancelled                   |
+| Google Meet       | fact            | Meeting end event with participant list             |
+| Google Drive      | fact            | File create/modify events; content not stored       |
+| Shared Drive      | fact            | Folder and file changes in team drives              |
+
+### Retry behavior
+
+Failed deliveries land in the per-tenant dead-letter folder. Replay via:
+
+```
+POST /admin/webhooks/replay/{tenant_id}/{event_id}
+```

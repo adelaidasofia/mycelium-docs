@@ -1,0 +1,40 @@
+---
+title: "Quickstart"
+description: "Five minutes to first ingest and first query"
+---
+
+Goal: ingest a small source, query it, see the system route deterministically.
+
+## 1. Install
+
+Follow [/getting-started/install](/getting-started/install). For this quickstart, the paste-prompt path is fastest.
+
+## 2. Pick a source
+
+For a five-minute test, pick something with one or two recent messages:
+
+- a single Slack channel (`/ingest-slack <channel-name> --days 1`)
+- a single GitHub repo's PRs (`/ingest-github <owner/repo> --days 7`)
+- a Notion database (`/ingest-notion <database-name>`)
+
+The ingest skills land entries under `External Inputs/<Source>/<scope>/<YYYY-MM-DD>.md`.
+
+## 3. Query
+
+After ingest finishes, open Claude Code and ask a natural-language question that the source can answer. Example after a Slack ingest:
+
+```
+What did the team decide about the rollout window in #release-planning this week?
+```
+
+The agent reads the matching markdown files, extracts the decision, and cites the source by file path.
+
+## 4. Verify reliability
+
+Run `/diagnose` from the same session. The diagnostic checks the install, hooks, MCP connections, and journal index. Green = ready. Yellow = warnings. Red = something to fix.
+
+## What's next
+
+- [Typed memory](/architecture/typed-memory) - see how decisions, exceptions, facts, and workflows differ.
+- [Resolver](/architecture/resolver) - see how the agent picks the right rule for a new query.
+- [Connectors](/connectors/index) - the full list of substrate skills and webhook receivers.

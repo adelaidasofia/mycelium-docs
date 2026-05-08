@@ -1,0 +1,44 @@
+---
+title: "Security posture"
+description: "Summary of controls, with links to the full trust page"
+---
+
+This page summarizes the runtime's security controls. The full trust page (compliance certs, sub-processors, DPA, DPIA, incident contact) lives on the marketing site at [myceliumai.co/trust](https://myceliumai.co/trust).
+
+## Authentication and authorization
+
+- **Tenant isolation:** Every tenant gets its own JWT secret, its own vault directory under `vaults/<tenant_id>/`, and its own audit trail. Cross-tenant reads return 404. Cross-tenant writes return 403.
+- **JWT bearer:** Every route outside `/healthz` requires a tenant-scoped JWT. Tokens are scoped at mint time and cannot be rescoped at runtime.
+- **Webhook signatures:** Each connector source uses its own signature scheme (HMAC-SHA256, X-Hub-Signature, signed JWT, source-specific bearer). Per-tenant signing secrets live in env vars and are never logged.
+
+## Audit and observability
+
+- **Append-only audit log:** Every read, write, and admin action lands in a shared audit log keyed by tenant. Each line is JSON, timestamped, and forwardable to any SIEM.
+- **Per-tenant SSE stream:** Real-time event stream for ingestion volume, dead letters, and webhook health. Available at `/admin/stream/{tenant_id}`.
+- **Dead-letter queue:** Failed webhook deliveries land in a per-tenant dead-letter store with replay endpoints at `/admin/webhooks/replay/{tenant_id}/{event_id}`.
+
+## Data handling
+
+- **Vault on disk:** Plain markdown. No proprietary format. A compliance auditor can read the vault without the runtime running.
+- **No model memory:** The runtime does not pass user data to the LLM provider as model-side memory. Every model call ships its own retrieved context for the call only.
+- **Encryption at rest:** Vault files encrypted at rest at the filesystem level (LUKS / FileVault / EBS). Per-tenant secrets in a sealed secrets manager.
+- **Encryption in transit:** TLS 1.3 on all connector ingress and admin egress.
+
+## Self-host options
+
+- **BYOC (bring your own cloud):** Runtime ships as a container; customer's VPC, customer's keys, customer's audit forwarding. See [/self-host/byoc](/self-host/byoc).
+- **Airgapped:** Dockerfile and runbook for fully airgapped installs. See [/self-host/airgapped](/self-host/airgapped).
+
+## Privacy
+
+- **Data residency:** BYOC and airgapped installs keep data inside the customer's chosen region. Managed offering supports US, EU, and Latin America regions.
+- **Sub-processors:** Listed at [myceliumai.co/trust](https://myceliumai.co/trust). Customer notification on any sub-processor change.
+- **DPA:** Standard DPA available; custom terms negotiable for enterprise.
+
+## Compliance
+
+Compliance certifications and SOC 2 status are listed at [myceliumai.co/trust](https://myceliumai.co/trust). Status is updated as audits close. For a procurement-ready security packet, contact us through the marketing site.
+
+## Incident response
+
+Public security advisories ship at [myceliumai.co/security/advisories](https://myceliumai.co/security/advisories). For a coordinated disclosure, see the SECURITY.md in the [ai-brain-starter](https://github.com/adelaidasofia/ai-brain-starter) repo.

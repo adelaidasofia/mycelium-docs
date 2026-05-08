@@ -1,0 +1,39 @@
+---
+title: "Confluence"
+description: "Ingest Confluence pages and spaces into typed memory"
+---
+
+Confluence uses a webhook receiver (paid runtime).
+
+## Webhook receiver (paid runtime)
+
+```
+POST /webhooks/confluence/{tenant_id}
+```
+
+**Signature:** Confluence Cloud sends a `X-Hub-Signature` (HMAC-SHA256) on webhook payloads. The receiver validates the signature.
+
+### Setup
+
+1. In Confluence, go to **Settings > Webhooks > Create webhook** (requires Confluence admin).
+2. Set URL to `https://runtime.myceliumai.co/webhooks/confluence/{your_tenant_id}`.
+3. Select events: **Page Created**, **Page Updated**, **Blog Post Created**, **Blog Post Updated**, **Space Created**.
+4. Generate a secret and add it to the runtime: `CONFLUENCE_WEBHOOK_SECRET_{TENANT_ID}` in your env.
+5. For Confluence Server/Data Center: configure the webhook in the admin panel under **General Configuration > Webhooks**.
+
+### Events ingested
+
+| Confluence event   | Memory category | Notes                                               |
+|--------------------|-----------------|-----------------------------------------------------|
+| Page created       | fact            | Full page content extracted                         |
+| Page updated       | fact            | Diff captured; prior version retained in git        |
+| Blog post          | fact            | Blog content extracted                              |
+| Space created      | fact            | Space metadata                                      |
+
+### Retry behavior
+
+Failed deliveries land in the per-tenant dead-letter folder. Replay via:
+
+```
+POST /admin/webhooks/replay/{tenant_id}/{event_id}
+```

@@ -1,0 +1,45 @@
+---
+title: "Salesforce"
+description: "Ingest Salesforce objects and platform events into typed memory"
+---
+
+Salesforce uses a webhook receiver (paid runtime). No open-source ingest skill ships in the current substrate.
+
+## Webhook receiver (paid runtime)
+
+Real-time push via Salesforce Platform Events or Outbound Messages.
+
+```
+POST /webhooks/salesforce/{tenant_id}
+```
+
+**Signature:** Platform Events arrive via the Streaming API (CometD long-poll or SSE). The runtime uses a connected app with OAuth 2.0 JWT Bearer flow to maintain a subscription. Outbound Messages sign via SOAP `X-SFDC-Signature`.
+
+### Setup
+
+1. In Salesforce, create a Connected App with OAuth scopes: `api`, `refresh_token`.
+2. Generate a certificate for the JWT Bearer flow and upload to the Connected App.
+3. Configure Platform Events: define which standard or custom events to subscribe to.
+4. Add to the runtime env:
+   - `SALESFORCE_CLIENT_ID_{TENANT_ID}`
+   - `SALESFORCE_PRIVATE_KEY_{TENANT_ID}` (PEM, base64-encoded)
+   - `SALESFORCE_USERNAME_{TENANT_ID}`
+   - `SALESFORCE_INSTANCE_URL_{TENANT_ID}` (e.g., `https://myorg.my.salesforce.com`)
+
+### Events ingested
+
+| Salesforce object  | Memory category | Notes                                               |
+|--------------------|-----------------|-----------------------------------------------------|
+| Opportunity        | decision        | Stage changes, closed-won/lost                      |
+| Case               | exception       | Case opened = exception; closed = resolved          |
+| Contact / Account  | relationship    | CRM entity created or updated                       |
+| Task               | fact            | Activity log entries                                |
+| Custom events      | configurable    | Define mapping in `connectors/salesforce.yaml`      |
+
+### Retry behavior
+
+Failed deliveries land in the per-tenant dead-letter folder. Replay via:
+
+```
+POST /admin/webhooks/replay/{tenant_id}/{event_id}
+```

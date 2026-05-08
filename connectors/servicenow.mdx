@@ -1,0 +1,42 @@
+---
+title: "ServiceNow"
+description: "Ingest ServiceNow incidents, changes, and ITSM events into typed memory"
+---
+
+ServiceNow uses a webhook receiver (paid runtime) via ServiceNow Business Rules or Outbound REST.
+
+## Webhook receiver (paid runtime)
+
+```
+POST /webhooks/servicenow/{tenant_id}
+```
+
+**Signature:** ServiceNow outbound REST messages send a configurable `Authorization` header. The runtime validates a shared bearer token against the per-tenant secret.
+
+### Setup
+
+1. In ServiceNow, create an Outbound REST Message at **System Web Services > Outbound > REST Message**.
+2. Set endpoint to `https://runtime.myceliumai.co/webhooks/servicenow/{your_tenant_id}`.
+3. Add an HTTP Header: `Authorization: Bearer {your_secret}`.
+4. Create Business Rules on the tables you want to monitor (Incident, Change, Problem, CMDB).
+5. Add to the runtime env: `SERVICENOW_BEARER_TOKEN_{TENANT_ID}`.
+
+Alternatively, configure a Flow Designer flow to trigger the outbound REST call on record create/update.
+
+### Events ingested
+
+| ServiceNow table   | Memory category | Notes                                               |
+|--------------------|-----------------|-----------------------------------------------------|
+| Incident           | exception       | Incident opened = exception; resolved = resolved    |
+| Change Request     | decision        | Change planned, approved, implemented               |
+| Problem            | exception       | Root-cause problem tracking                         |
+| Release            | decision        | Release deployments                                 |
+| CMDB record        | fact            | Configuration item created or updated               |
+
+### Retry behavior
+
+Failed deliveries land in the per-tenant dead-letter folder. Replay via:
+
+```
+POST /admin/webhooks/replay/{tenant_id}/{event_id}
+```

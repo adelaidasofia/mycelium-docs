@@ -1,0 +1,53 @@
+---
+title: "Databricks"
+description: "Ingest Databricks job runs, alerts, and Unity Catalog events into typed memory"
+---
+
+Databricks uses a webhook receiver (paid runtime) via Databricks Webhooks (MLflow) and Databricks SQL Alerts.
+
+## Webhook receiver (paid runtime)
+
+```
+POST /webhooks/databricks/{tenant_id}
+```
+
+**Signature:** Databricks webhooks send an `Authorization: Bearer` header with a configurable token. The receiver validates the token against the per-tenant secret.
+
+### Setup
+
+**Option A — Databricks Webhooks (MLflow experiment events)**
+
+1. Create a webhook via the Databricks CLI or REST API:
+   ```bash
+   databricks mlflow webhooks create \
+     --events MODEL_VERSION_CREATED,MODEL_VERSION_TRANSITIONED_STAGE \
+     --http-url-spec '{"url":"https://runtime.myceliumai.co/webhooks/databricks/{tenant_id}","authorization":"Bearer {your_secret}"}'
+   ```
+2. Add to the runtime env: `DATABRICKS_WEBHOOK_TOKEN_{TENANT_ID}`.
+
+**Option B — Databricks SQL Alerts**
+
+1. Create a Databricks SQL Alert on any query.
+2. Set the notification destination to a webhook pointing to `https://runtime.myceliumai.co/webhooks/databricks/{your_tenant_id}` with the Bearer token.
+
+**Option C — Unity Catalog audit logs**
+
+Configure Unity Catalog audit log streaming to a Delta table, then use a Databricks Job to call the Mycelium External Function (same pattern as Snowflake).
+
+### Events ingested
+
+| Databricks event        | Memory category | Notes                                               |
+|-------------------------|-----------------|-----------------------------------------------------|
+| Model stage transition  | decision        | Model promoted to staging or production             |
+| SQL Alert triggered     | exception       | Threshold-crossing on monitored queries             |
+| Job run succeeded       | fact            | Pipeline run result and duration                    |
+| Job run failed          | exception       | Failure with error details                          |
+| Unity Catalog audit     | fact            | Data access and governance events                   |
+
+### Retry behavior
+
+Failed deliveries land in the per-tenant dead-letter folder. Replay via:
+
+```
+POST /admin/webhooks/replay/{tenant_id}/{event_id}
+```

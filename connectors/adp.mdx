@@ -1,0 +1,46 @@
+---
+title: "ADP"
+description: "Ingest ADP workforce events into typed memory"
+---
+
+ADP uses a webhook receiver (paid runtime) via the ADP Marketplace API.
+
+## Webhook receiver (paid runtime)
+
+```
+POST /webhooks/adp/{tenant_id}
+```
+
+**Signature:** ADP API calls use mutual TLS (mTLS) plus an `Authorization: Bearer` OAuth 2.0 token. The runtime validates both the client certificate and the bearer token.
+
+### Setup
+
+1. Register an app in the [ADP Marketplace](https://apps.adp.com). Request the **Worker Read** and **HR Events** API products.
+2. Download the client certificate and private key from the ADP app configuration.
+3. Configure an ADP Event Notification subscription pointing to `https://runtime.myceliumai.co/webhooks/adp/{your_tenant_id}`.
+4. Add to the runtime env:
+   - `ADP_CLIENT_ID_{TENANT_ID}`
+   - `ADP_CLIENT_SECRET_{TENANT_ID}`
+   - `ADP_CLIENT_CERT_{TENANT_ID}` (PEM, base64-encoded)
+   - `ADP_CLIENT_KEY_{TENANT_ID}` (PEM, base64-encoded)
+   - `ADP_API_BASE_{TENANT_ID}` (e.g., `https://api.adp.com`)
+
+### Events ingested
+
+| ADP event type          | Memory category | Notes                                               |
+|-------------------------|-----------------|-----------------------------------------------------|
+| Worker hire             | relationship    | New employee with role, department, start date      |
+| Worker termination      | relationship    | Departure date, role last held                      |
+| Worker status change    | relationship    | Status transitions (leave, rehire, etc.)            |
+| Position change         | relationship    | Role or reporting structure changes                 |
+| Pay rate change         | fact            | Effective date; amounts excluded by default         |
+
+**PII handling:** Compensation amounts are excluded from memory by default. Configure `adp.exclude_fields` in the connector config.
+
+### Retry behavior
+
+Failed deliveries land in the per-tenant dead-letter folder. Replay via:
+
+```
+POST /admin/webhooks/replay/{tenant_id}/{event_id}
+```

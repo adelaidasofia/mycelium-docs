@@ -1,0 +1,33 @@
+---
+title: "Python"
+description: "Python access to the substrate via in-repo skills"
+---
+
+The Python surface ships in the open-source [ai-brain-starter](https://github.com/adelaidasofia/ai-brain-starter) repo. The skills under `skills/` are runnable Python: each one reads the vault, calls deterministic services, and writes typed entries.
+
+## Install
+
+```bash
+git clone https://github.com/adelaidasofia/ai-brain-starter ~/Documents/MyVault
+cd ~/Documents/MyVault
+./bootstrap.sh
+```
+
+After install, the skills register automatically with Claude Code. Run them via slash commands (`/journal`, `/graphify`, `/diagnose`) from any session.
+
+## Direct import
+
+For embedding the substrate in another Python project, the typed-memory schemas, the resolver, and the graph utilities are importable from the repo's `lib/` and `schemas/` directories. A standalone Python SDK package (PyPI) is on the roadmap; until then, vendor the modules you need.
+
+## Standalone SDK status
+
+A standalone PyPI package is planned. Goal: install via `pip install mycelium-sdk` and call the runtime API from any Python codebase without cloning the substrate.
+
+Until that lands, the recommended path is:
+
+- For LLM-driven work inside Claude Code, use the slash-command skills.
+- For programmatic access from outside Claude Code, call the runtime's HTTP API directly (see [/api-reference/runtime](/api-reference/runtime)).
+
+## Examples
+
+Skill examples and reference implementations live under `skills/<skill-name>/SKILL.md` in the substrate repo. The `synth-pr-to-sop` skill is a good reference for the typed-memory write path.
