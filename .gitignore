@@ -1,6 +1,8 @@
 .DS_Store
-.mintlify/
 node_modules/
+.next/
+.mintlify/
+dist/
 .env
 .env.local
 *.log
