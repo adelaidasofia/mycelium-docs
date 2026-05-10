@@ -41,6 +41,33 @@ Seven connectors added for F100 procurement requirements. Each one supports SAML
 
 The Round 3 set covers the connectors that platform-team buyers ask for first when evaluating an AI runtime. List and integration notes ship here as each one stabilizes.
 
+## Attachment parsing
+
+Every connector that surfaces files (Slack uploads, Gmail attachments, Notion file blocks, Box, Dropbox, Confluence, Jira, Google Drive) hands the binary to the runtime's parse layer before indexing. Without this, the body of a 40-slide PPTX or a 200-page PDF would land as a URL stub and never reach retrieval.
+
+Backend: Microsoft's [markitdown](https://github.com/microsoft/markitdown) (MIT). Single output: markdown, optimized for LLM token economics.
+
+Supported formats:
+
+| Format                  | Notes                                          |
+|-------------------------|------------------------------------------------|
+| PDF                     | Text-layer extraction. Azure DI optional.      |
+| DOCX, DOC               | Headings, tables, lists preserved.             |
+| PPTX, PPT               | One section per slide.                         |
+| XLSX, XLS               | One section per sheet, tables as markdown.     |
+| HTML                    | Cleaned content, no nav/footer noise.          |
+| CSV, TSV, JSON, XML     | Tabular and structured payloads.               |
+| EPub                    | Chapter structure preserved.                   |
+| ZIP                     | Recursive: each member parsed in turn.         |
+| Images (PNG/JPG/etc)    | EXIF + optional GPT-4o caption.                |
+| Audio (MP3/M4A/WAV/OGG) | Transcript via the configured speech backend.  |
+
+Enable per tenant by setting `MEMORY_RUNTIME_PRO_PARSE_ATTACHMENTS=1` on the runtime process. Default install ships text-only ingest, so existing tenants see no behavior change until they opt in.
+
+Limits: 25 MB per attachment (override with `MEMORY_RUNTIME_PRO_PARSE_MAX_BYTES`). Larger files are skipped with an audit-log note rather than crashing the connector.
+
+Audit signal: every parse attempt writes to the audit log under `operation: parse.attachment` with `format`, `bytes_in`, and `error` fields. Parsing failures count separately from connector failures, so the Revenue per Agent reliability score is not penalized when the file format itself is the problem.
+
 ## Adding a connector
 
 Two paths:
