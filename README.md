@@ -1,5 +1,18 @@
 # Mycelium docs
 
+
+<!-- mycelium-badges:start -->
+
+<p>
+  <a href="https://github.com/adelaidasofia/mycelium-docs/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/adelaidasofia/mycelium-docs?color=blue"></a>
+  <a href="https://github.com/adelaidasofia/mycelium-docs/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/adelaidasofia/mycelium-docs?color=eab308"></a>
+  <a href="https://github.com/adelaidasofia/mycelium-docs/commits/main"><img alt="Last commit" src="https://img.shields.io/github/last-commit/adelaidasofia/mycelium-docs"></a>
+  <a href="https://github.com/adelaidasofia/mycelium-docs/issues"><img alt="Open issues" src="https://img.shields.io/github/issues/adelaidasofia/mycelium-docs"></a>
+  <a href="https://myceliumai.co"><img alt="Built by Mycelium AI" src="https://img.shields.io/badge/built_by-Mycelium_AI-15B89A"></a>
+</p>
+
+<!-- mycelium-badges:end -->
+
 Public docs site for Mycelium AI. Built on [Mintlify](https://mintlify.com).
 
 ## Local dev
