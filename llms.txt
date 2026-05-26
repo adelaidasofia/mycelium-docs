@@ -1,0 +1,112 @@
+# Mycelium docs
+
+> Technical documentation for Mycelium, the persistent memory substrate for AI agents inside operating enterprises. Architecture, runtime API, connectors, SDKs, security posture, self-host, and vertical packs. Companion to the marketing site at myceliumai.co.
+
+Mycelium ships in two layers: the open-source substrate ([ai-brain-starter](https://github.com/adelaidasofia/ai-brain-starter), MIT) and the productized commercial runtime (separate license). The substrate is a Markdown-readable, version-controlled memory store with skills as units of work, RESOLVER bi-temporal routing, deterministic hooks as guardrails, and write-back discipline as the feedback loop. The runtime adds multi-tenant JWT auth, per-tenant audit logs, webhook validation, SSE event streams, and Fortune-100-grade procurement artifacts. These docs document both layers; pages note which layer they apply to.
+
+## Getting started
+
+- [Install](https://docs.myceliumai.co/getting-started/install): Three install paths for the open-source substrate — paste-prompt for Claude Code, plugin marketplace, manual git clone.
+- [Quickstart](https://docs.myceliumai.co/getting-started/quickstart): Five-minute ingest-and-query path against a single Slack channel, GitHub repo, or Notion database.
+
+## Architecture
+
+- [Architecture overview](https://docs.myceliumai.co/architecture/overview): The five reliability pillars and the agent failure modes each one prevents (hallucination, silent failure, drift, regression, opacity).
+- [Typed memory](https://docs.myceliumai.co/architecture/typed-memory): How the queryable graph of decisions, exceptions, people, projects, and policies is backed by version-controlled Markdown.
+- [RESOLVER routing](https://docs.myceliumai.co/architecture/resolver): Bi-temporal lookup over the typed graph — what was true on a given date and how the substrate's view of that date evolved.
+- [Karpathy pattern](https://docs.myceliumai.co/architecture/karpathy-pattern): The central-Markdown-store + skills + write-back-discipline + compute-separation pattern the substrate implements.
+
+## Connectors
+
+The substrate ships with six connectors today; the runtime adds enterprise connectors below.
+
+- [Connectors index](https://docs.myceliumai.co/connectors): Overview, status matrix, and write-pattern conventions across all sources.
+
+### Communication
+- [Slack](https://docs.myceliumai.co/connectors/slack)
+- [Gmail](https://docs.myceliumai.co/connectors/gmail)
+- [Microsoft 365](https://docs.myceliumai.co/connectors/microsoft365)
+- [Google Workspace](https://docs.myceliumai.co/connectors/google-workspace)
+- [WhatsApp](https://docs.myceliumai.co/connectors/whatsapp)
+- [Zoom](https://docs.myceliumai.co/connectors/zoom)
+
+### Engineering
+- [GitHub](https://docs.myceliumai.co/connectors/github)
+- [GitLab](https://docs.myceliumai.co/connectors/gitlab)
+- [Linear](https://docs.myceliumai.co/connectors/linear)
+- [Jira](https://docs.myceliumai.co/connectors/jira)
+- [Confluence](https://docs.myceliumai.co/connectors/confluence)
+
+### Productivity
+- [Notion](https://docs.myceliumai.co/connectors/notion)
+- [Box](https://docs.myceliumai.co/connectors/box)
+- [Dropbox](https://docs.myceliumai.co/connectors/dropbox)
+
+### CRM and sales
+- [Salesforce](https://docs.myceliumai.co/connectors/salesforce)
+- [HubSpot](https://docs.myceliumai.co/connectors/hubspot)
+
+### HR and finance
+- [Workday](https://docs.myceliumai.co/connectors/workday)
+- [ADP](https://docs.myceliumai.co/connectors/adp)
+- [SAP](https://docs.myceliumai.co/connectors/sap)
+- [Oracle](https://docs.myceliumai.co/connectors/oracle)
+
+### Data
+- [Snowflake](https://docs.myceliumai.co/connectors/snowflake)
+- [Databricks](https://docs.myceliumai.co/connectors/databricks)
+
+### ITSM
+- [ServiceNow](https://docs.myceliumai.co/connectors/servicenow)
+
+## Skills
+
+- [Skills index](https://docs.myceliumai.co/skills): Every skill shipped in the open-source substrate — daily-journal, meeting-todos, repurpose-talk, insights, ingest-*, and the rest. Each skill is a deterministic slash command with a SKILL.md spec and a reproducible side effect.
+
+## Reliability and security
+
+- [Reliability manifesto](https://docs.myceliumai.co/reliability/manifesto): The five pillars framed for the security architect or platform-team lead evaluating whether the runtime can sit inside a regulated environment.
+- [Security posture](https://docs.myceliumai.co/security/posture): Tenant isolation, JWT bearer scoping, webhook signature schemes, audit and observability. Cross-references the marketing site's [Trust](https://myceliumai.co/trust) page for compliance certs and sub-processors.
+
+## API reference
+
+- [Runtime API](https://docs.myceliumai.co/api-reference/runtime): FastAPI surface for the paid runtime. Tenants, ingest, retrieve, synthesis, webhooks, audit. JWT bearer auth on every route outside `/healthz`. Full OpenAPI document published with the runtime.
+
+## SDKs
+
+- [Python SDK](https://docs.myceliumai.co/sdk/python)
+- [TypeScript SDK](https://docs.myceliumai.co/sdk/typescript)
+- [Java SDK](https://docs.myceliumai.co/sdk/java)
+- [Go SDK](https://docs.myceliumai.co/sdk/go)
+
+## Self-host
+
+- [BYOC (bring your own compute)](https://docs.myceliumai.co/self-host/byoc): Customer-owned compute model. Cross-vendor LLM parity matrix; substrate runs against Claude, GPT, Gemini, Llama, or customer-owned weights.
+- [Air-gapped](https://docs.myceliumai.co/self-host/airgapped): Single-tenant deployment in disconnected environments. No outbound network requirement.
+
+## Vertical packs
+
+- [Vertical packs index](https://docs.myceliumai.co/vertical-packs): Industry overlays on top of the substrate. Five packs ship today — legal, healthcare, finance, hospitality, professional services. Each pack ships industry schemas, hooks, and starter rules.
+
+## Open source
+
+- [ai-brain-starter (GitHub)](https://github.com/adelaidasofia/ai-brain-starter): MIT open-source substrate. Vault structure, skills, hooks, scripts, install scaffolding.
+- [Substrate license (MIT)](https://github.com/adelaidasofia/ai-brain-starter/blob/main/LICENSE)
+
+## Related sites
+
+- [Marketing site](https://myceliumai.co): Product positioning, pilots, comparison, pricing, trust posture.
+- [Trust page](https://myceliumai.co/trust): Compliance certifications, sub-processors, DPA, DPIA, HIPAA posture, vulnerability disclosure.
+
+## Contact
+
+- Pilot inquiries: team@myceliumai.co
+- Vulnerability disclosure: security@myceliumai.co
+- Privacy and data-subject requests: privacy@myceliumai.co
+
+## Optional
+
+These resources can be skipped in token-constrained agent contexts.
+
+- [Mintlify-rendered HTML at every doc URL above](https://docs.myceliumai.co): The live docs site. Every link above is also reachable as raw Markdown at `<url>.md` (Mintlify convention).
+- [Connectors not yet shipped](https://docs.myceliumai.co/connectors): Salesforce, Microsoft 365, and Confluence are listed in the connectors index but ship after the current six (Slack, Gmail, GitHub, Linear, Notion, WhatsApp). Treat them as roadmap, not current capability.
