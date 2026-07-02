@@ -2,7 +2,7 @@
 
 > Technical documentation for Mycelium, the persistent memory substrate for AI agents inside operating enterprises. Architecture, runtime API, connectors, SDKs, security posture, self-host, and vertical packs. Companion to the marketing site at mycelium-ai.co.
 
-Mycelium ships in two layers: the open-source substrate ([ai-brain-starter](https://github.com/adelaidasofia/ai-brain-starter), MIT) and the productized commercial runtime (separate license). The substrate is a Markdown-readable, version-controlled memory store with skills as units of work, RESOLVER bi-temporal routing, deterministic hooks as guardrails, and write-back discipline as the feedback loop. The runtime adds multi-tenant JWT auth, per-tenant audit logs, webhook validation, SSE event streams, and Fortune-100-grade procurement artifacts. These docs document both layers; pages note which layer they apply to.
+Mycelium ships in two layers: the open-source substrate ([ai-brain-starter](https://github.com/mycelium-hq/ai-brain-starter), MIT) and the productized commercial runtime (separate license). The substrate is a Markdown-readable, version-controlled memory store with skills as units of work, RESOLVER bi-temporal routing, deterministic hooks as guardrails, and write-back discipline as the feedback loop. The runtime adds multi-tenant JWT auth, per-tenant audit logs, webhook validation, SSE event streams, and Fortune-100-grade procurement artifacts. These docs document both layers; pages note which layer they apply to.
 
 ## Getting started
 
@@ -90,8 +90,8 @@ The substrate ships with six connectors today; the runtime adds enterprise conne
 
 ## Open source
 
-- [ai-brain-starter (GitHub)](https://github.com/adelaidasofia/ai-brain-starter): MIT open-source substrate. Vault structure, skills, hooks, scripts, install scaffolding.
-- [Substrate license (MIT)](https://github.com/adelaidasofia/ai-brain-starter/blob/main/LICENSE)
+- [ai-brain-starter (GitHub)](https://github.com/mycelium-hq/ai-brain-starter): MIT open-source substrate. Vault structure, skills, hooks, scripts, install scaffolding.
+- [Substrate license (MIT)](https://github.com/mycelium-hq/ai-brain-starter/blob/main/LICENSE)
 
 ## Related sites
 
