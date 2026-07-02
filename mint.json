@@ -43,7 +43,7 @@
     {
       "name": "GitHub",
       "icon": "github",
-      "url": "https://github.com/adelaidasofia/ai-brain-starter"
+      "url": "https://github.com/mycelium-hq/ai-brain-starter"
     },
     {
       "name": "Trust",
@@ -180,6 +180,6 @@
     }
   ],
   "footerSocials": {
-    "github": "https://github.com/adelaidasofia/ai-brain-starter"
+    "github": "https://github.com/mycelium-hq/ai-brain-starter"
   }
 }
